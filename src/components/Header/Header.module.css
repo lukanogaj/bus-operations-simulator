@@ -1,4 +1,15 @@
 .topBar {
-	height: 64px;
-	border-bottom: 1px solid #333;
+	height: var(--header-height);
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	padding: 0 var(--spacing-lg);
+
+	background: var(--color-surface);
+
+	color: var(--color-text);
+
+	border-bottom: 1px solid var(--border-color);
 }

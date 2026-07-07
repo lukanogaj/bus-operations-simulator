@@ -1,4 +1,25 @@
 .sidebarShell {
-	width: 240px;
-	border-right: 1px solid #333;
+	width: var(--sidebar-width);
+	background: var(--color-surface);
+	color: var(--color-text);
+
+	padding: var(--spacing-lg);
+
+	border-right: 1px solid var(--border-color);
+}
+
+.navigationList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.navigationItem {
+	padding: 12px;
+	border-radius: 8px;
+	cursor: pointer;
+}
+
+.navigationItem:hover {
+	background: var(--color-surface-light);
 }

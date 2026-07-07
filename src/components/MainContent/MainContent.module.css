@@ -1,4 +1,9 @@
 .contentViewport {
 	flex: 1;
-	padding: 16px;
+
+	padding: var(--spacing-lg);
+
+	background: var(--color-bg);
+
+	color: var(--color-text);
 }
