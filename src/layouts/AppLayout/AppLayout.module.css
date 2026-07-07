@@ -1,0 +1,10 @@
+.appFrame {
+	display: flex;
+	min-height: 100vh;
+}
+
+.workspaceArea {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
