@@ -1,12 +1,11 @@
-import "./App.css";
+import AppLayout from "./layouts/AppLayout/AppLayout";
 
-function App() {
+const App = () => {
 	return (
-		<main>
-			<h1>Bus Operations Simulator</h1>
-			<p>Project Setup Complete</p>
-		</main>
+		<AppLayout>
+			<h1>Main Content</h1>
+		</AppLayout>
 	);
-}
+};
 
 export default App;
