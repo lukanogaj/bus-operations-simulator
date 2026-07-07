@@ -12,14 +12,21 @@
 	list-style: none;
 	padding: 0;
 	margin: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 
 .navigationItem {
 	padding: 12px;
 	border-radius: 8px;
 	cursor: pointer;
+
+	transition: all 0.2s ease;
 }
 
 .navigationItem:hover {
-	background: var(--color-surface-light);
+	background: var(--color-accent);
+	color: #111827;
 }
