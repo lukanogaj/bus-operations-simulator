@@ -1,9 +1,10 @@
 import AppLayout from "./layouts/AppLayout/AppLayout";
+import DriverPage from "./pages/DriversPage/DriversPage";
 
 const App = () => {
 	return (
 		<AppLayout>
-			<h1>Main Content</h1>
+			<DriverPage />
 		</AppLayout>
 	);
 };
