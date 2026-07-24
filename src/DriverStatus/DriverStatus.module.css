@@ -1,0 +1,10 @@
+.driverStatus {
+	color: var(--color-text);
+
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+.statusValue {
+	font-weight: 600;
+}
