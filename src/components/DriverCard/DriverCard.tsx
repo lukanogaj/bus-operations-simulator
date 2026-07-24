@@ -1,5 +1,8 @@
 import styles from "./DriverCard.module.css";
 import type { Driver } from "../../types/driver";
+import DriverStatus from "../../DriverStatus/DriverStatus";
+import DriverRota from "../../DriverRota/DriverRota";
+import DriverRoute from "../../DriverRoute/DriverRoute";
 const DriverCard = ({
 	employeeNumber,
 	batchNumber,
@@ -11,9 +14,19 @@ const DriverCard = ({
 }: Driver) => {
 	return (
 		<li className={styles.driverCard}>
-			Last Name: {lastName},First Name: {firstName}, Employee Number:
-			{employeeNumber},Batch Number:{batchNumber}, Status:{status}, Rota:{rota},
-			Route:{route}
+			<h3 className={styles.driverName}>
+				{firstName} {lastName}
+			</h3>
+			<p>
+				<strong>Employee Number: </strong>
+				{employeeNumber}
+			</p>
+			<p>
+				<strong>Batch Number:</strong> {batchNumber}
+			</p>
+			<DriverStatus status={status} />
+			<DriverRota rota={rota} />
+			<DriverRoute route={route} />
 		</li>
 	);
 };
