@@ -17,8 +17,13 @@ const DriverCard = ({
 			<h3 className={styles.driverName}>
 				{firstName} {lastName}
 			</h3>
-			<p>Employee Number: {employeeNumber}</p>
-			<p>Batch Number: {batchNumber}</p>
+			<p>
+				<strong>Employee Number: </strong>
+				{employeeNumber}
+			</p>
+			<p>
+				<strong>Batch Number:</strong> {batchNumber}
+			</p>
 			<DriverStatus status={status} />
 			<DriverRota rota={rota} />
 			<DriverRoute route={route} />

@@ -5,7 +5,11 @@ type DriverRouteProps = {
 	route: DriverRouteType;
 };
 const DriverRoute = ({ route }: DriverRouteProps) => {
-	return <div className={styles.driverRoute}>Route: {route} </div>;
+	return (
+		<div className={styles.driverRoute}>
+			<strong>Route:</strong> {route}{" "}
+		</div>
+	);
 };
 
 export default DriverRoute;
