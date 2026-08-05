@@ -1,10 +1,10 @@
 export interface RestDayPattern {
 	patternNumber: number;
-	saturday: number | "R";
-	sunday: number | "R";
-	monday: number | "R";
-	tuesday: number | "R";
-	wednesday: number | "R";
-	thursday: number | "R";
-	friday: number | "R";
+	saturday: "W" | "R";
+	sunday: "W" | "R";
+	monday: "W" | "R";
+	tuesday: "W" | "R";
+	wednesday: "W" | "R";
+	thursday: "W" | "R";
+	friday: "W" | "R";
 }
