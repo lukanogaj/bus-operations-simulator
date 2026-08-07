@@ -11,5 +11,6 @@ export interface Driver {
 		| "suspended"
 		| "leaveNotice";
 	rota: "early" | "middle" | "late" | "night" | "spare";
+	rotaWeek: 1 | 2 | 3 | 4;
 	route: string;
 }
