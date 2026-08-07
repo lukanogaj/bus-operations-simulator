@@ -1,5 +1,5 @@
-export interface RestDayPattern {
-	patternNumber: number;
+export interface RotaWeek {
+	weekNumber: 1 | 2 | 3 | 4;
 	saturday: "W" | "R";
 	sunday: "W" | "R";
 	monday: "W" | "R";

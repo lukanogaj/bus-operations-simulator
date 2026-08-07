@@ -1,8 +1,8 @@
-import type { RestDayPattern } from "../types/rotaDutyPattern";
+import type { RotaWeek } from "../types/rotaWeek";
 
-export const restDaysPatterns: RestDayPattern[] = [
+export const rotaWeeks: RotaWeek[] = [
 	{
-		patternNumber: 1,
+		weekNumber: 1,
 		saturday: "R",
 		sunday: "R",
 		monday: "W",
@@ -12,7 +12,7 @@ export const restDaysPatterns: RestDayPattern[] = [
 		friday: "W",
 	},
 	{
-		patternNumber: 2,
+		weekNumber: 2,
 		saturday: "W",
 		sunday: "R",
 		monday: "R",
@@ -22,7 +22,7 @@ export const restDaysPatterns: RestDayPattern[] = [
 		friday: "W",
 	},
 	{
-		patternNumber: 3,
+		weekNumber: 3,
 		saturday: "W",
 		sunday: "W",
 		monday: "W",
@@ -32,7 +32,7 @@ export const restDaysPatterns: RestDayPattern[] = [
 		friday: "W",
 	},
 	{
-		patternNumber: 4,
+		weekNumber: 4,
 		saturday: "W",
 		sunday: "W",
 		monday: "W",
