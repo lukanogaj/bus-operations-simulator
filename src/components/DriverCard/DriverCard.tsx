@@ -3,6 +3,7 @@ import type { Driver } from "../../types/driver";
 import DriverStatus from "../../DriverStatus/DriverStatus";
 import DriverRota from "../../DriverRota/DriverRota";
 import DriverRoute from "../../DriverRoute/DriverRoute";
+import DriverRotaWeek from "../../DriverRotaWeek/DriverRotaWeek";
 const DriverCard = ({
 	employeeNumber,
 	batchNumber,
@@ -11,6 +12,7 @@ const DriverCard = ({
 	status,
 	rota,
 	route,
+	rotaWeek,
 }: Driver) => {
 	return (
 		<li className={styles.driverCard}>
@@ -27,6 +29,7 @@ const DriverCard = ({
 			<DriverStatus status={status} />
 			<DriverRota rota={rota} />
 			<DriverRoute route={route} />
+			<DriverRotaWeek rotaWeek={rotaWeek} />
 		</li>
 	);
 };

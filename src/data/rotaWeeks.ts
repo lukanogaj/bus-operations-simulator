@@ -1,6 +1,6 @@
-import type { RotaWeek } from "../types/rotaWeek";
+import type { RestDayPattern } from "../types/rotaWeek";
 
-export const rotaWeeks: RotaWeek[] = [
+export const restDayPattern: RestDayPattern[] = [
 	{
 		weekNumber: 1,
 		saturday: "R",

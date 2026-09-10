@@ -16,6 +16,7 @@ const DriverPage = () => {
 						status={item.status}
 						rota={item.rota}
 						route={item.route}
+						rotaWeek={item.rotaWeek}
 						key={item.employeeNumber}
 					/>
 				))}
