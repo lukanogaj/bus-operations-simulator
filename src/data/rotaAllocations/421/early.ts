@@ -1,2 +1,3 @@
-import type { RotaAllocationRow } from "../../types/rotaAllocation";
-export const route421Early: RotaAllocationRow[] = [];
+import { generateRouteAllocation } from "../../../utils/generateRouteAllocation";
+
+export const route421Early = generateRouteAllocation("421").early;

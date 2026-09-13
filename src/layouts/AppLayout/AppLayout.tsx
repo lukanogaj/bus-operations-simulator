@@ -8,12 +8,13 @@ import styles from "./AppLayout.module.css";
 
 type AppLayoutProps = {
 	children: ReactNode;
+	onSelectNavigation: (item: string) => void;
 };
 
-const AppLayout = ({ children }: AppLayoutProps) => {
+const AppLayout = ({ children, onSelectNavigation }: AppLayoutProps) => {
 	return (
 		<div className={styles.appFrame}>
-			<Sidebar />
+			<Sidebar onSelect={onSelectNavigation} />
 
 			<section className={styles.workspaceArea}>
 				<Header />

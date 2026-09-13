@@ -1,0 +1,46 @@
+.container {
+	padding: var(--spacing-lg);
+}
+
+.container h1 {
+	margin-bottom: var(--spacing-lg);
+}
+
+.rotaCard {
+	max-width: 640px;
+
+	padding: var(--spacing-lg);
+
+	background-color: var(--color-surface);
+
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+}
+
+.rotaCard h2 {
+	margin-bottom: var(--spacing-sm);
+}
+
+.rotaCard p {
+	margin-bottom: var(--spacing-lg);
+
+	color: var(--color-text-muted);
+}
+
+.viewPdfButton {
+	padding: 12px 18px;
+
+	border: none;
+	border-radius: 8px;
+
+	background-color: var(--color-accent);
+	color: var(--color-bg);
+
+	font-weight: 600;
+
+	cursor: pointer;
+}
+
+.viewPdfButton:hover {
+	opacity: 0.9;
+}
