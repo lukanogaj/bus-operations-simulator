@@ -21,6 +21,9 @@ export const generateSignOnTime = (
 	totalDuties: number,
 ): string => {
 	const range = dutyTimeRanges[rota];
+	if (totalDuties === 1) {
+		return range.signOnStart;
+	}
 
 	const startMinutes = timeToMinutes(range.signOnStart);
 	const endMinutes = timeToMinutes(range.signOnEnd);
