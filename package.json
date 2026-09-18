@@ -12,15 +12,18 @@
   "dependencies": {
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "pg": "^8.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
+    "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }
