@@ -17,20 +17,9 @@ const DriverPage = () => {
 				return response.json();
 			})
 			.then((data) => {
-				const mapped = data.map((item: any) => ({
-					employeeNumber: item.employee_number,
-					batchNumber: item.batch_number,
-					firstName: item.first_name,
-					lastName: item.last_name,
-					status: item.status,
-					rota: item.rota,
-					rotaWeek: item.rota_week,
-					route: item.route,
-				}));
-				setDrivers(mapped);
+				setDrivers(data);
 				setLoading(false);
 			})
-
 			.catch((err) => {
 				setError(err.message);
 				setLoading(false);
