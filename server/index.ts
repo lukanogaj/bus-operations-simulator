@@ -1,7 +1,9 @@
 import express from "express";
+import cors from "cors";
 import { Pool } from "pg";
 
 const app = express();
+app.use(cors());
 const port = 3000;
 
 const pool = new Pool({
