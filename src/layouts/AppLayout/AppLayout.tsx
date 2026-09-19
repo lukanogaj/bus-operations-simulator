@@ -9,12 +9,20 @@ import styles from "./AppLayout.module.css";
 type AppLayoutProps = {
 	children: ReactNode;
 	onSelectNavigation: (item: string) => void;
+	selectedPage: string;
 };
 
-const AppLayout = ({ children, onSelectNavigation }: AppLayoutProps) => {
+const AppLayout = ({
+	children,
+	onSelectNavigation,
+	selectedPage,
+}: AppLayoutProps) => {
 	return (
 		<div className={styles.appFrame}>
-			<Sidebar onSelect={onSelectNavigation} />
+			<Sidebar
+				onSelect={onSelectNavigation}
+				selectedItem={selectedPage}
+			/>
 
 			<section className={styles.workspaceArea}>
 				<Header />

@@ -14,9 +14,10 @@ const navigationItems = [
 
 interface SidebarProps {
 	onSelect: (item: string) => void;
+	selectedItem: string;
 }
 
-const Sidebar = ({ onSelect }: SidebarProps) => {
+const Sidebar = ({ onSelect, selectedItem }: SidebarProps) => {
 	return (
 		<aside className={styles.sidebarShell}>
 			<nav>
@@ -24,7 +25,11 @@ const Sidebar = ({ onSelect }: SidebarProps) => {
 					{navigationItems.map((item) => (
 						<li
 							key={item}
-							className={styles.navigationItem}
+							className={
+								item === selectedItem
+									? `${styles.navigationItem} ${styles.active}`
+									: styles.navigationItem
+							}
 							onClick={() => onSelect(item)}>
 							{item}
 						</li>
