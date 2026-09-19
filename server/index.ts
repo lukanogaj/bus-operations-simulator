@@ -33,6 +33,28 @@ app.get("/drivers", async (req, res) => {
 		res.status(500).json({ error: "Failed to fetch drivers" });
 	}
 });
+
+app.get("/duties", async (req, res) => {
+	try {
+		const result = await pool.query(
+			"SELECT * FROM duties ORDER BY duty_number",
+		);
+
+		const duties = result.rows.map((row) => ({
+			dutyNumber: row.duty_number,
+			route: row.route,
+			rota: row.rota,
+			signOn: row.sign_on,
+			signOff: row.sign_off,
+		}));
+
+		res.json(duties);
+	} catch (error) {
+		console.error("Error fetching duties:", error);
+		res.status(500).json({ error: "Failed to fetch duties" });
+	}
+});
+
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
 });
