@@ -55,6 +55,23 @@ app.get("/duties", async (req, res) => {
 	}
 });
 
+app.get("/routes", async (req, res) => {
+	try {
+		const result = await pool.query(
+			"SELECT * FROM routes ORDER BY route_number",
+		);
+
+		const routes = result.rows.map((row) => ({
+			routeNumber: row.route_number,
+		}));
+
+		res.json(routes);
+	} catch (error) {
+		console.error("Error fetching routes:", error);
+		res.status(500).json({ error: "Failed to fetch routes" });
+	}
+});
+
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
 });
