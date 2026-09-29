@@ -147,6 +147,8 @@ export const generateWeeklySnapshot = async (
 					route,
 					rota,
 					employeeNumber: driver.employee_number,
+					firstName: driver.first_name,
+					lastName: driver.last_name,
 					position: week,
 					rotaWeek: currentRotaWeek,
 

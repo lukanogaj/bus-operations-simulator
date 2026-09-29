@@ -1,11 +1,12 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-import { driverList } from "../data/drivers";
 import type { WeeklyRotaDocument } from "../types/weeklyRotaDocument";
 
 type RotaRow = {
 	employeeNumber: number;
+	firstName: string;
+	lastName: string;
 	rotaWeek: 1 | 2 | 3 | 4;
 	saturday: "R" | number;
 	sunday: "R" | number;
@@ -37,18 +38,6 @@ export const generateWeeklyRotaPdf = (
 		unit: "mm",
 		format: "a4",
 	});
-
-	const getDriverName = (employeeNumber: number) => {
-		const driver = driverList.find(
-			(driver) => driver.employeeNumber === employeeNumber,
-		);
-
-		if (!driver) {
-			return "Unknown Driver";
-		}
-
-		return `${driver.firstName} ${driver.lastName}`;
-	};
 
 	const formatDate = (date: string) => {
 		const [year, month, day] = date.split("-");
@@ -102,7 +91,7 @@ export const generateWeeklyRotaPdf = (
 
 				body: section.rows.map((row) => [
 					row.employeeNumber,
-					getDriverName(row.employeeNumber),
+					`${row.firstName} ${row.lastName}`,
 					row.saturday,
 					row.sunday,
 					row.monday,
