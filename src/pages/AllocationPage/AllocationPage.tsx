@@ -5,7 +5,13 @@ import styles from "./AllocationPage.module.css";
 const AllocationPage = () => {
 	const handleViewPdf = async () => {
 		try {
-			const response = await fetch("http://localhost:3000/weekly-snapshot");
+			const token = localStorage.getItem("token");
+
+			const response = await fetch("http://localhost:3000/weekly-snapshot", {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
 
 			if (!response.ok) {
 				throw new Error("Failed to fetch weekly snapshot");

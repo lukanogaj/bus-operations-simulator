@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
-import styles from "./DriversPage.module.css";
-import type { Driver } from "../../types/driver";
+import { useEffect, useState } from "react";
+
 import DriverCard from "../../components/DriverCard/DriverCard";
+import type { Driver } from "../../types/driver";
+
+import styles from "./DriversPage.module.css";
 
 const DriverPage = () => {
 	const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -9,11 +11,18 @@ const DriverPage = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		fetch("http://localhost:3000/drivers")
+		const token = localStorage.getItem("token");
+
+		fetch("http://localhost:3000/drivers", {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
 			.then((response) => {
 				if (!response.ok) {
 					throw new Error("Failed to fetch drivers");
 				}
+
 				return response.json();
 			})
 			.then((data) => {
@@ -32,9 +41,11 @@ const DriverPage = () => {
 	return (
 		<section className={styles.container}>
 			<h1>Drivers</h1>
+
 			<ul className={styles.driverList}>
 				{drivers.map((item) => (
 					<DriverCard
+						key={item.employeeNumber}
 						lastName={item.lastName}
 						firstName={item.firstName}
 						employeeNumber={item.employeeNumber}
@@ -43,7 +54,6 @@ const DriverPage = () => {
 						rota={item.rota}
 						route={item.route}
 						rotaWeek={item.rotaWeek}
-						key={item.employeeNumber}
 					/>
 				))}
 			</ul>

@@ -18,6 +18,48 @@ const pool = new Pool({
 	connectionString: "postgres://localhost:5432/bus_operations_simulator",
 });
 
+type AuthenticatedUser = {
+	userId: number;
+	username: string;
+	role: "manager" | "controller";
+};
+
+const authenticateUser = (
+	req: express.Request,
+	res: express.Response,
+	next: express.NextFunction,
+) => {
+	const authorization = req.headers.authorization;
+
+	if (!authorization) {
+		return res.status(401).json({
+			error: "Authentication required",
+		});
+	}
+
+	const token = authorization.startsWith("Bearer ")
+		? authorization.slice(7)
+		: null;
+
+	if (!token) {
+		return res.status(401).json({
+			error: "Invalid authorization header",
+		});
+	}
+
+	try {
+		const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
+
+		req.user = decoded;
+
+		next();
+	} catch (error) {
+		return res.status(401).json({
+			error: "Invalid or expired token",
+		});
+	}
+};
+
 app.post("/login", async (req, res) => {
 	try {
 		const { username, password } = req.body;
@@ -80,7 +122,7 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-app.get("/drivers", async (req, res) => {
+app.get("/drivers", authenticateUser, async (req, res) => {
 	try {
 		const result = await pool.query(
 			"SELECT * FROM drivers ORDER BY employee_number",
@@ -107,7 +149,7 @@ app.get("/drivers", async (req, res) => {
 	}
 });
 
-app.get("/duties", async (req, res) => {
+app.get("/duties", authenticateUser, async (req, res) => {
 	try {
 		const result = await pool.query(
 			"SELECT * FROM duties ORDER BY duty_number",
@@ -131,7 +173,7 @@ app.get("/duties", async (req, res) => {
 	}
 });
 
-app.get("/routes", async (req, res) => {
+app.get("/routes", authenticateUser, async (req, res) => {
 	try {
 		const result = await pool.query(
 			"SELECT * FROM routes ORDER BY route_number",
@@ -151,7 +193,7 @@ app.get("/routes", async (req, res) => {
 	}
 });
 
-app.get("/weekly-snapshot", async (req, res) => {
+app.get("/weekly-snapshot", authenticateUser, async (req, res) => {
 	try {
 		const startDate = new Date("2026-01-01");
 		const currentDate = new Date();

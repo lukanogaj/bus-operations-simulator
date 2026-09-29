@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
-import styles from "./DutiesPage.module.css";
+import { useEffect, useState } from "react";
+
 import type { Duty } from "../../types/duty";
+
+import styles from "./DutiesPage.module.css";
 
 const DutiesPage = () => {
 	const [duties, setDuties] = useState<Duty[]>([]);
@@ -8,11 +10,18 @@ const DutiesPage = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		fetch("http://localhost:3000/duties")
+		const token = localStorage.getItem("token");
+
+		fetch("http://localhost:3000/duties", {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
 			.then((response) => {
 				if (!response.ok) {
 					throw new Error("Failed to fetch duties");
 				}
+
 				return response.json();
 			})
 			.then((data) => {
@@ -30,23 +39,27 @@ const DutiesPage = () => {
 
 	return (
 		<section className={styles.container}>
-			{" "}
 			<h1>Duties</h1>
+
 			<ul className={styles.dutyList}>
 				{duties.map((duty) => (
 					<li
 						key={duty.dutyNumber}
 						className={styles.dutyCard}>
-						<p className={styles.dutyNumber}>Duty : {duty.dutyNumber}</p>
+						<p className={styles.dutyNumber}>Duty: {duty.dutyNumber}</p>
+
 						<p>
 							<strong>Route:</strong> {duty.route}
 						</p>
+
 						<p>
 							<strong>Rota:</strong> {duty.rota}
 						</p>
+
 						<p>
 							<strong>Sign On:</strong> {duty.signOn}
 						</p>
+
 						<p>
 							<strong>Sign Off:</strong> {duty.signOff}
 						</p>
