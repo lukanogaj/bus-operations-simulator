@@ -1,16 +1,22 @@
-import { generateWeeklySnapshot } from "../../utils/generateWeeklySnapshot";
 import { generateWeeklyRotaPdf } from "../../utils/generateWeeklyRotaPdf";
 
 import styles from "./AllocationPage.module.css";
 
 const AllocationPage = () => {
-	const handleViewPdf = () => {
-		const startDate = new Date("2026-09-05T00:00:00");
-		const currentDate = new Date();
+	const handleViewPdf = async () => {
+		try {
+			const response = await fetch("http://localhost:3000/weekly-snapshot");
 
-		const snapshot = generateWeeklySnapshot(startDate, currentDate);
+			if (!response.ok) {
+				throw new Error("Failed to fetch weekly snapshot");
+			}
 
-		generateWeeklyRotaPdf(snapshot);
+			const snapshot = await response.json();
+
+			generateWeeklyRotaPdf(snapshot);
+		} catch (error) {
+			console.error("Error loading weekly rota:", error);
+		}
 	};
 
 	return (

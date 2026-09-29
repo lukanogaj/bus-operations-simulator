@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { Pool } from "pg";
+import { generateWeeklySnapshot } from "./services/rotaService";
 
 const app = express();
 app.use(cors());
@@ -74,4 +75,18 @@ app.get("/routes", async (req, res) => {
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
+});
+
+app.get("/weekly-snapshot", async (req, res) => {
+	try {
+		const startDate = new Date("2026-01-01");
+		const currentDate = new Date();
+
+		const snapshot = await generateWeeklySnapshot(pool, startDate, currentDate);
+
+		res.json(snapshot);
+	} catch (error) {
+		console.error("Error generating weekly snapshot:", error);
+		res.status(500).json({ error: "Failed to generate weekly snapshot" });
+	}
 });
