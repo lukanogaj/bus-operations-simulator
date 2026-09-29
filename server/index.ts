@@ -73,10 +73,6 @@ app.get("/routes", async (req, res) => {
 	}
 });
 
-app.listen(port, () => {
-	console.log(`Server running at http://localhost:${port}`);
-});
-
 app.get("/weekly-snapshot", async (req, res) => {
 	try {
 		const startDate = new Date("2026-01-01");
@@ -89,4 +85,7 @@ app.get("/weekly-snapshot", async (req, res) => {
 		console.error("Error generating weekly snapshot:", error);
 		res.status(500).json({ error: "Failed to generate weekly snapshot" });
 	}
+});
+app.listen(port, () => {
+	console.log(`Server running at http://localhost:${port}`);
 });
