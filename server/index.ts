@@ -1,14 +1,83 @@
 import express from "express";
 import cors from "cors";
 import { Pool } from "pg";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
 import { generateWeeklySnapshot } from "./services/rotaService";
 
 const app = express();
-app.use(cors());
 const port = 3000;
+
+const JWT_SECRET = "bus-operations-secret";
+
+app.use(express.json());
+app.use(cors());
 
 const pool = new Pool({
 	connectionString: "postgres://localhost:5432/bus_operations_simulator",
+});
+
+app.post("/login", async (req, res) => {
+	try {
+		const { username, password } = req.body;
+
+		if (!username || !password) {
+			return res.status(400).json({
+				error: "Username and password are required",
+			});
+		}
+
+		const result = await pool.query(
+			`SELECT id, username, password_hash, role
+			 FROM users
+			 WHERE username = $1`,
+			[username],
+		);
+
+		const user = result.rows[0];
+
+		if (!user) {
+			return res.status(401).json({
+				error: "Invalid username or password",
+			});
+		}
+
+		const passwordMatches = await bcrypt.compare(password, user.password_hash);
+
+		if (!passwordMatches) {
+			return res.status(401).json({
+				error: "Invalid username or password",
+			});
+		}
+
+		const token = jwt.sign(
+			{
+				userId: user.id,
+				username: user.username,
+				role: user.role,
+			},
+			JWT_SECRET,
+			{
+				expiresIn: "90d",
+			},
+		);
+
+		res.json({
+			token,
+			user: {
+				id: user.id,
+				username: user.username,
+				role: user.role,
+			},
+		});
+	} catch (error) {
+		console.error("Login error:", error);
+
+		res.status(500).json({
+			error: "Login failed",
+		});
+	}
 });
 
 app.get("/drivers", async (req, res) => {
@@ -31,7 +100,10 @@ app.get("/drivers", async (req, res) => {
 		res.json(drivers);
 	} catch (error) {
 		console.error("Error fetching drivers:", error);
-		res.status(500).json({ error: "Failed to fetch drivers" });
+
+		res.status(500).json({
+			error: "Failed to fetch drivers",
+		});
 	}
 });
 
@@ -52,7 +124,10 @@ app.get("/duties", async (req, res) => {
 		res.json(duties);
 	} catch (error) {
 		console.error("Error fetching duties:", error);
-		res.status(500).json({ error: "Failed to fetch duties" });
+
+		res.status(500).json({
+			error: "Failed to fetch duties",
+		});
 	}
 });
 
@@ -69,7 +144,10 @@ app.get("/routes", async (req, res) => {
 		res.json(routes);
 	} catch (error) {
 		console.error("Error fetching routes:", error);
-		res.status(500).json({ error: "Failed to fetch routes" });
+
+		res.status(500).json({
+			error: "Failed to fetch routes",
+		});
 	}
 });
 
@@ -83,9 +161,13 @@ app.get("/weekly-snapshot", async (req, res) => {
 		res.json(snapshot);
 	} catch (error) {
 		console.error("Error generating weekly snapshot:", error);
-		res.status(500).json({ error: "Failed to generate weekly snapshot" });
+
+		res.status(500).json({
+			error: "Failed to generate weekly snapshot",
+		});
 	}
 });
+
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
 });
