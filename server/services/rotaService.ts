@@ -1,15 +1,27 @@
 import type { Pool } from "pg";
 
+type Duty = {
+	duty_number: number;
+	route: string;
+	rota: "early" | "middle" | "late";
+	sign_on: string;
+	sign_off: string;
+};
+
 export const generateWeeklySnapshot = async (
 	pool: Pool,
 	startDate: Date,
 	currentDate: Date,
 ) => {
+	// =========================================================
+	// DATABASE
+	// =========================================================
+
 	const routesResult = await pool.query(
 		"SELECT route_number FROM routes ORDER BY route_number",
 	);
 
-	const routes = routesResult.rows.map((row) => row.route_number);
+	const routes: string[] = routesResult.rows.map((row) => row.route_number);
 
 	const driversResult = await pool.query(
 		"SELECT * FROM drivers ORDER BY employee_number",
@@ -17,11 +29,21 @@ export const generateWeeklySnapshot = async (
 
 	const drivers = driversResult.rows;
 
+	const dutiesResult = await pool.query(
+		"SELECT * FROM duties ORDER BY duty_number",
+	);
+
+	const duties: Duty[] = dutiesResult.rows;
+
 	const restDayPatternsResult = await pool.query(
 		"SELECT * FROM rest_day_patterns ORDER BY week_number",
 	);
 
 	const restDayPatterns = restDayPatternsResult.rows;
+
+	// =========================================================
+	// DRIVERS
+	// =========================================================
 
 	const getDriversForRota = (route: string, rota: string, rotaWeek: number) => {
 		return drivers.filter(
@@ -31,6 +53,10 @@ export const generateWeeklySnapshot = async (
 				driver.rota_week === rotaWeek,
 		);
 	};
+
+	// =========================================================
+	// REST DAY PATTERNS
+	// =========================================================
 
 	const getRestDayPattern = (rotaWeek: number) => {
 		const pattern = restDayPatterns.find(
@@ -44,21 +70,37 @@ export const generateWeeklySnapshot = async (
 		return pattern;
 	};
 
-	const rotas = ["early", "middle", "late"];
+	// =========================================================
+	// DUTIES
+	// PostgreSQL is now the source of truth.
+	// =========================================================
 
-	const generateDutyNumber = (
+	const getDutiesForRotaWeek = (
 		route: string,
 		rota: string,
 		rotaWeek: number,
-		workDayIndex: number,
 	) => {
-		const routeIndex = routes.indexOf(route);
-		const rotaIndex = rotas.indexOf(rota);
-
-		return (
-			routeIndex * 60 + rotaIndex * 20 + (rotaWeek - 1) * 5 + workDayIndex + 1
+		const rotaDuties = duties.filter(
+			(duty) => duty.route === route && duty.rota === rota,
 		);
+
+		const startIndex = (rotaWeek - 1) * 5;
+		const endIndex = startIndex + 5;
+
+		const weekDuties = rotaDuties.slice(startIndex, endIndex);
+
+		if (weekDuties.length !== 5) {
+			throw new Error(
+				`Expected 5 duties for route ${route}, rota ${rota}, week ${rotaWeek}, found ${weekDuties.length}`,
+			);
+		}
+
+		return weekDuties;
 	};
+
+	// =========================================================
+	// WEEKLY WORK / REST PATTERN
+	// =========================================================
 
 	const getWeeklyRestPattern = (
 		route: string,
@@ -67,6 +109,8 @@ export const generateWeeklySnapshot = async (
 	) => {
 		const pattern = getRestDayPattern(rotaWeek);
 
+		const weekDuties = getDutiesForRotaWeek(route, rota, rotaWeek);
+
 		let workDayIndex = 0;
 
 		const getDayValue = (day: string) => {
@@ -74,16 +118,17 @@ export const generateWeeklySnapshot = async (
 				return "R";
 			}
 
-			const dutyNumber = generateDutyNumber(
-				route,
-				rota,
-				rotaWeek,
-				workDayIndex,
-			);
+			const duty = weekDuties[workDayIndex];
+
+			if (!duty) {
+				throw new Error(
+					`Duty not found for route ${route}, rota ${rota}, week ${rotaWeek}, work day ${workDayIndex + 1}`,
+				);
+			}
 
 			workDayIndex++;
 
-			return dutyNumber;
+			return duty.duty_number;
 		};
 
 		return {
@@ -97,6 +142,10 @@ export const generateWeeklySnapshot = async (
 			friday: getDayValue(pattern.friday),
 		};
 	};
+
+	// =========================================================
+	// CURRENT ROTA WEEK
+	// =========================================================
 
 	const getCurrentRotaWeek = (
 		baseRotaWeek: number,
@@ -123,6 +172,10 @@ export const generateWeeklySnapshot = async (
 
 		return ((baseRotaWeek - 1 + elapsedWeeks) % 4) + 1;
 	};
+
+	// =========================================================
+	// ROTA GENERATION
+	// =========================================================
 
 	const rotaWeeks = [1, 2, 3, 4];
 
@@ -164,6 +217,10 @@ export const generateWeeklySnapshot = async (
 		});
 	};
 
+	// =========================================================
+	// ROUTE ALLOCATION
+	// =========================================================
+
 	const generateRouteAllocation = (route: string) => {
 		return {
 			early: generateRotaRows(route, "early"),
@@ -177,6 +234,10 @@ export const generateWeeklySnapshot = async (
 		allocation: generateRouteAllocation(route),
 	}));
 
+	// =========================================================
+	// WEEK COMMENCING
+	// =========================================================
+
 	const weekStart = new Date(currentDate);
 
 	const daysSinceSaturday = (weekStart.getDay() + 1) % 7;
@@ -185,9 +246,14 @@ export const generateWeeklySnapshot = async (
 
 	const year = weekStart.getFullYear();
 	const month = String(weekStart.getMonth() + 1).padStart(2, "0");
+
 	const day = String(weekStart.getDate()).padStart(2, "0");
 
 	const weekCommencing = `${year}-${month}-${day}`;
+
+	// =========================================================
+	// SNAPSHOT
+	// =========================================================
 
 	return {
 		weekCommencing,
