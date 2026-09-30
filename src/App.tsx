@@ -5,6 +5,7 @@ import AllocationPage from "./pages/AllocationPage/AllocationPage";
 import DriverPage from "./pages/DriversPage/DriversPage";
 import DutiesPage from "./pages/DutiesPage/DutiesPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
+import OperationsPage from "./pages/OperationsPage/OperationsPage";
 
 type User = {
 	id: number;
@@ -50,6 +51,8 @@ const App = () => {
 				<AllocationPage />
 			) : selectedPage === "Duties" ? (
 				<DutiesPage />
+			) : selectedPage === "Operations Board" ? (
+				<OperationsPage />
 			) : (
 				<DriverPage />
 			)}

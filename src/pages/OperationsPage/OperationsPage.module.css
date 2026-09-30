@@ -1,0 +1,127 @@
+.container {
+	padding: 32px;
+}
+
+.header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 24px;
+	margin-bottom: 28px;
+}
+
+.header h1 {
+	margin: 0 0 8px;
+	font-size: 32px;
+}
+
+.header p {
+	margin: 0;
+	color: #94a3b8;
+}
+
+.issueCount {
+	padding: 8px 14px;
+	border-radius: 8px;
+	background: #1e293b;
+	font-weight: 600;
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+	gap: 20px;
+}
+
+.issueCard {
+	padding: 20px;
+	border: 1px solid #334155;
+	border-radius: 10px;
+	background: #1e293b;
+}
+
+.issueHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.issueHeader h2 {
+	margin: 0 0 4px;
+	font-size: 18px;
+}
+
+.employeeNumber {
+	color: #94a3b8;
+	font-size: 13px;
+}
+
+.status {
+	padding: 5px 10px;
+	border-radius: 6px;
+	background: #7f1d1d;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.details {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 12px;
+	margin: 20px 0;
+}
+
+.details div {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.details span {
+	color: #94a3b8;
+	font-size: 12px;
+}
+
+.details strong {
+	font-size: 15px;
+	text-transform: capitalize;
+}
+
+.replacements {
+	padding-top: 16px;
+	border-top: 1px solid #334155;
+}
+
+.replacements h3 {
+	margin: 0 0 12px;
+	font-size: 14px;
+}
+
+.candidate {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 10px 12px;
+	border-radius: 6px;
+	background: #0f172a;
+}
+
+.candidate div {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.candidate span {
+	color: #94a3b8;
+	font-size: 12px;
+}
+
+.noReplacement {
+	margin: 0;
+	color: #94a3b8;
+	font-size: 13px;
+}

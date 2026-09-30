@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { generateWeeklySnapshot } from "./services/rotaService";
+import { generateOperationalIssues } from "./services/operationsService";
 
 const app = express();
 const port = 3000;
@@ -206,6 +207,19 @@ app.get("/weekly-snapshot", authenticateUser, async (req, res) => {
 
 		res.status(500).json({
 			error: "Failed to generate weekly snapshot",
+		});
+	}
+});
+app.get("/operations/issues", authenticateUser, async (req, res) => {
+	try {
+		const issues = await generateOperationalIssues(pool);
+
+		res.json(issues);
+	} catch (error) {
+		console.error("Error generating operational issues:", error);
+
+		res.status(500).json({
+			error: "Failed to generate operational issues",
 		});
 	}
 });
