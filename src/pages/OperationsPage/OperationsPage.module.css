@@ -125,3 +125,33 @@
 	color: #94a3b8;
 	font-size: 13px;
 }
+
+.assignButton {
+	padding: 7px 12px;
+	border: 0;
+	border-radius: 6px;
+	background: #2563eb;
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.assignButton:hover {
+	background: #1d4ed8;
+}
+
+.assignButton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.error {
+	margin: 0 0 20px;
+	padding: 12px 14px;
+	border-radius: 8px;
+	background: #7f1d1d;
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 600;
+}

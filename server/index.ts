@@ -5,7 +5,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { generateWeeklySnapshot } from "./services/rotaService";
-import { generateOperationalIssues } from "./services/operationsService";
+import {
+	createReplacementAssignment,
+	generateOperationalIssues,
+} from "./services/operationsService";
 
 const app = express();
 const port = 3000;
@@ -50,8 +53,6 @@ const authenticateUser = (
 
 	try {
 		const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
-
-		req.user = decoded;
 
 		next();
 	} catch (error) {
@@ -210,6 +211,7 @@ app.get("/weekly-snapshot", authenticateUser, async (req, res) => {
 		});
 	}
 });
+
 app.get("/operations/issues", authenticateUser, async (req, res) => {
 	try {
 		const issues = await generateOperationalIssues(pool);
@@ -220,6 +222,48 @@ app.get("/operations/issues", authenticateUser, async (req, res) => {
 
 		res.status(500).json({
 			error: "Failed to generate operational issues",
+		});
+	}
+});
+
+app.post("/operations/assignments", authenticateUser, async (req, res) => {
+	try {
+		const {
+			absentDriverNumber,
+			replacementDriverNumber,
+			dutyNumber,
+			assignmentDate,
+		} = req.body;
+
+		if (
+			!absentDriverNumber ||
+			!replacementDriverNumber ||
+			!dutyNumber ||
+			!assignmentDate
+		) {
+			return res.status(400).json({
+				error: "All assignment fields are required",
+			});
+		}
+
+		const assignment = await createReplacementAssignment(pool, {
+			absentDriverNumber,
+			replacementDriverNumber,
+			dutyNumber,
+			assignmentDate,
+		});
+
+		res.status(201).json(assignment);
+	} catch (error) {
+		console.error("Error creating replacement assignment:", error);
+
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to create replacement assignment";
+
+		res.status(400).json({
+			error: message,
 		});
 	}
 });
