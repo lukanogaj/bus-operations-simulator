@@ -1,6 +1,6 @@
 import type { Pool } from "pg";
 
-import { generateWeeklySnapshot } from "./rotaService";
+import { generateWeeklySnapshot, getCurrentRotaWeek } from "./rotaService";
 
 type DriverStatus =
 	| "available"
@@ -189,13 +189,23 @@ export const generateOperationalIssues = async (
 		const replacementCandidates = existingAssignment
 			? []
 			: availableSpareDrivers
-					.filter((spareDriver) => spareDriver.rota_week === driver.rota_week)
 					.map((spareDriver) => ({
+						driver: spareDriver,
+						currentRotaWeek: getCurrentRotaWeek(
+							spareDriver.rota_week,
+							startDate,
+							currentDate,
+						),
+					}))
+					.filter(
+						({ currentRotaWeek }) => currentRotaWeek === driverRow.rotaWeek,
+					)
+					.map(({ driver: spareDriver, currentRotaWeek }) => ({
 						employeeNumber: spareDriver.employee_number,
 						batchNumber: spareDriver.batch_number,
 						firstName: spareDriver.first_name,
 						lastName: spareDriver.last_name,
-						rotaWeek: spareDriver.rota_week,
+						rotaWeek: currentRotaWeek,
 					}));
 
 		issues.push({

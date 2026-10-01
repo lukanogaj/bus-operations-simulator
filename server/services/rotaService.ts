@@ -8,6 +8,32 @@ type Duty = {
 	sign_off: string;
 };
 
+export const getCurrentRotaWeek = (
+	baseRotaWeek: number,
+	startDate: Date,
+	currentDate: Date,
+) => {
+	const startUtc = Date.UTC(
+		startDate.getFullYear(),
+		startDate.getMonth(),
+		startDate.getDate(),
+	);
+
+	const currentUtc = Date.UTC(
+		currentDate.getFullYear(),
+		currentDate.getMonth(),
+		currentDate.getDate(),
+	);
+
+	const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
+
+	const elapsedWeeks = Math.floor(
+		(currentUtc - startUtc) / millisecondsPerWeek,
+	);
+
+	return ((baseRotaWeek - 1 + elapsedWeeks) % 4) + 1;
+};
+
 export const generateWeeklySnapshot = async (
 	pool: Pool,
 	startDate: Date,
@@ -144,36 +170,6 @@ export const generateWeeklySnapshot = async (
 	};
 
 	// =========================================================
-	// CURRENT ROTA WEEK
-	// =========================================================
-
-	const getCurrentRotaWeek = (
-		baseRotaWeek: number,
-		startDate: Date,
-		currentDate: Date,
-	) => {
-		const startUtc = Date.UTC(
-			startDate.getFullYear(),
-			startDate.getMonth(),
-			startDate.getDate(),
-		);
-
-		const currentUtc = Date.UTC(
-			currentDate.getFullYear(),
-			currentDate.getMonth(),
-			currentDate.getDate(),
-		);
-
-		const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
-
-		const elapsedWeeks = Math.floor(
-			(currentUtc - startUtc) / millisecondsPerWeek,
-		);
-
-		return ((baseRotaWeek - 1 + elapsedWeeks) % 4) + 1;
-	};
-
-	// =========================================================
 	// ROTA GENERATION
 	// =========================================================
 
@@ -246,7 +242,6 @@ export const generateWeeklySnapshot = async (
 
 	const year = weekStart.getFullYear();
 	const month = String(weekStart.getMonth() + 1).padStart(2, "0");
-
 	const day = String(weekStart.getDate()).padStart(2, "0");
 
 	const weekCommencing = `${year}-${month}-${day}`;
