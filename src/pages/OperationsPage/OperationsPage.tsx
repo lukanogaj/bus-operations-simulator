@@ -10,6 +10,13 @@ type ReplacementCandidate = {
 	rotaWeek: number;
 };
 
+type ReplacementDriver = {
+	employeeNumber: number;
+	batchNumber: number;
+	firstName: string;
+	lastName: string;
+};
+
 type OperationalIssue = {
 	employeeNumber: number;
 	firstName: string;
@@ -20,6 +27,8 @@ type OperationalIssue = {
 	rotaWeek: number;
 	dutyNumber: number;
 	assignmentDate: string;
+	coverageStatus: "UNCOVERED" | "COVERED";
+	replacementDriver: ReplacementDriver | null;
 	replacementCandidates: ReplacementCandidate[];
 };
 
@@ -115,6 +124,10 @@ const OperationsPage = () => {
 		);
 	}
 
+	const activeIssues = issues.filter(
+		(issue) => issue.coverageStatus === "UNCOVERED",
+	).length;
+
 	return (
 		<section className={styles.container}>
 			<div className={styles.header}>
@@ -123,7 +136,7 @@ const OperationsPage = () => {
 					<p>Current driver availability issues and replacement options.</p>
 				</div>
 
-				<div className={styles.issueCount}>{issues.length} active issues</div>
+				<div className={styles.issueCount}>{activeIssues} active issues</div>
 			</div>
 
 			{error && <p className={styles.error}>{error}</p>}
@@ -175,36 +188,57 @@ const OperationsPage = () => {
 						</div>
 
 						<div className={styles.replacements}>
-							<h3>Replacement candidates</h3>
+							{issue.coverageStatus === "COVERED" && issue.replacementDriver ? (
+								<>
+									<h3>COVERED</h3>
 
-							{issue.replacementCandidates.length === 0 ? (
-								<p className={styles.noReplacement}>
-									No available spare driver
-								</p>
-							) : (
-								issue.replacementCandidates.map((candidate) => (
-									<div
-										className={styles.candidate}
-										key={candidate.employeeNumber}>
+									<div className={styles.candidate}>
 										<div>
 											<strong>
-												{candidate.firstName} {candidate.lastName}
+												{issue.replacementDriver.firstName}{" "}
+												{issue.replacementDriver.lastName}
 											</strong>
 
-											<span>#{candidate.employeeNumber}</span>
+											<span>#{issue.replacementDriver.employeeNumber}</span>
 										</div>
-
-										<button
-											className={styles.assignButton}
-											type='button'
-											disabled={assigningDriver === candidate.employeeNumber}
-											onClick={() => handleAssign(issue, candidate)}>
-											{assigningDriver === candidate.employeeNumber
-												? "Assigning..."
-												: "Assign"}
-										</button>
 									</div>
-								))
+								</>
+							) : (
+								<>
+									<h3>Replacement candidates</h3>
+
+									{issue.replacementCandidates.length === 0 ? (
+										<p className={styles.noReplacement}>
+											No available spare driver
+										</p>
+									) : (
+										issue.replacementCandidates.map((candidate) => (
+											<div
+												className={styles.candidate}
+												key={candidate.employeeNumber}>
+												<div>
+													<strong>
+														{candidate.firstName} {candidate.lastName}
+													</strong>
+
+													<span>#{candidate.employeeNumber}</span>
+												</div>
+
+												<button
+													className={styles.assignButton}
+													type='button'
+													disabled={
+														assigningDriver === candidate.employeeNumber
+													}
+													onClick={() => handleAssign(issue, candidate)}>
+													{assigningDriver === candidate.employeeNumber
+														? "Assigning..."
+														: "Assign"}
+												</button>
+											</div>
+										))
+									)}
+								</>
 							)}
 						</div>
 					</article>

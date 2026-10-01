@@ -29,6 +29,13 @@ type ReplacementCandidate = {
 	rotaWeek: number;
 };
 
+type ReplacementDriver = {
+	employeeNumber: number;
+	batchNumber: number;
+	firstName: string;
+	lastName: string;
+};
+
 type OperationalIssue = {
 	employeeNumber: number;
 	firstName: string;
@@ -39,6 +46,8 @@ type OperationalIssue = {
 	rotaWeek: number;
 	dutyNumber: number;
 	assignmentDate: string;
+	coverageStatus: "UNCOVERED" | "COVERED";
+	replacementDriver: ReplacementDriver | null;
 	replacementCandidates: ReplacementCandidate[];
 };
 
@@ -47,6 +56,14 @@ type CreateReplacementAssignment = {
 	replacementDriverNumber: number;
 	dutyNumber: number;
 	assignmentDate: string;
+};
+
+type ReplacementAssignmentRow = {
+	absent_driver_number: number;
+	replacement_driver_number: number;
+	replacement_batch_number: number;
+	replacement_first_name: string;
+	replacement_last_name: string;
 };
 
 const getTodayName = () => {
@@ -86,17 +103,23 @@ export const generateOperationalIssues = async (
 	);
 
 	const assignmentsResult = await pool.query(
-		`SELECT replacement_driver_number
-		 FROM replacement_assignments
-		 WHERE assignment_date = CURRENT_DATE`,
+		`SELECT
+      ra.absent_driver_number,
+      ra.replacement_driver_number,
+      d.batch_number AS replacement_batch_number,
+      d.first_name AS replacement_first_name,
+      d.last_name AS replacement_last_name
+     FROM replacement_assignments ra
+     JOIN drivers d
+       ON d.employee_number = ra.replacement_driver_number
+     WHERE ra.assignment_date = CURRENT_DATE`,
 	);
 
 	const drivers: Driver[] = driversResult.rows;
+	const assignments: ReplacementAssignmentRow[] = assignmentsResult.rows;
 
 	const assignedDriverNumbers = new Set<number>(
-		assignmentsResult.rows.map(
-			(assignment) => assignment.replacement_driver_number,
-		),
+		assignments.map((assignment) => assignment.replacement_driver_number),
 	);
 
 	const unavailableDrivers = drivers.filter(
@@ -149,15 +172,31 @@ export const generateOperationalIssues = async (
 			continue;
 		}
 
-		const replacementCandidates = availableSpareDrivers
-			.filter((spareDriver) => spareDriver.rota_week === driver.rota_week)
-			.map((spareDriver) => ({
-				employeeNumber: spareDriver.employee_number,
-				batchNumber: spareDriver.batch_number,
-				firstName: spareDriver.first_name,
-				lastName: spareDriver.last_name,
-				rotaWeek: spareDriver.rota_week,
-			}));
+		const existingAssignment = assignments.find(
+			(assignment) =>
+				assignment.absent_driver_number === driver.employee_number,
+		);
+
+		const replacementDriver: ReplacementDriver | null = existingAssignment
+			? {
+					employeeNumber: existingAssignment.replacement_driver_number,
+					batchNumber: existingAssignment.replacement_batch_number,
+					firstName: existingAssignment.replacement_first_name,
+					lastName: existingAssignment.replacement_last_name,
+				}
+			: null;
+
+		const replacementCandidates = existingAssignment
+			? []
+			: availableSpareDrivers
+					.filter((spareDriver) => spareDriver.rota_week === driver.rota_week)
+					.map((spareDriver) => ({
+						employeeNumber: spareDriver.employee_number,
+						batchNumber: spareDriver.batch_number,
+						firstName: spareDriver.first_name,
+						lastName: spareDriver.last_name,
+						rotaWeek: spareDriver.rota_week,
+					}));
 
 		issues.push({
 			employeeNumber: driver.employee_number,
@@ -169,6 +208,8 @@ export const generateOperationalIssues = async (
 			rotaWeek: driverRow.rotaWeek,
 			dutyNumber: duty,
 			assignmentDate,
+			coverageStatus: existingAssignment ? "COVERED" : "UNCOVERED",
+			replacementDriver,
 			replacementCandidates,
 		});
 	}
@@ -189,8 +230,8 @@ export const createReplacementAssignment = async (
 
 	const absentDriverResult = await pool.query(
 		`SELECT *
-		 FROM drivers
-		 WHERE employee_number = $1`,
+     FROM drivers
+     WHERE employee_number = $1`,
 		[absentDriverNumber],
 	);
 
@@ -206,8 +247,8 @@ export const createReplacementAssignment = async (
 
 	const replacementDriverResult = await pool.query(
 		`SELECT *
-		 FROM drivers
-		 WHERE employee_number = $1`,
+     FROM drivers
+     WHERE employee_number = $1`,
 		[replacementDriverNumber],
 	);
 
@@ -227,8 +268,8 @@ export const createReplacementAssignment = async (
 
 	const dutyResult = await pool.query(
 		`SELECT duty_number, route, rota
-		 FROM duties
-		 WHERE duty_number = $1`,
+     FROM duties
+     WHERE duty_number = $1`,
 		[dutyNumber],
 	);
 
@@ -244,9 +285,9 @@ export const createReplacementAssignment = async (
 
 	const existingAssignmentResult = await pool.query(
 		`SELECT id
-		 FROM replacement_assignments
-		 WHERE replacement_driver_number = $1
-		   AND assignment_date = $2`,
+     FROM replacement_assignments
+     WHERE replacement_driver_number = $1
+       AND assignment_date = $2`,
 		[replacementDriverNumber, assignmentDate],
 	);
 
@@ -254,15 +295,39 @@ export const createReplacementAssignment = async (
 		throw new Error("Replacement driver is already assigned on this date");
 	}
 
+	const existingAbsentDriverAssignmentResult = await pool.query(
+		`SELECT id
+     FROM replacement_assignments
+     WHERE absent_driver_number = $1
+       AND assignment_date = $2`,
+		[absentDriverNumber, assignmentDate],
+	);
+
+	if (existingAbsentDriverAssignmentResult.rowCount) {
+		throw new Error("Absent driver is already covered on this date");
+	}
+
+	const existingDutyAssignmentResult = await pool.query(
+		`SELECT id
+     FROM replacement_assignments
+     WHERE duty_number = $1
+       AND assignment_date = $2`,
+		[dutyNumber, assignmentDate],
+	);
+
+	if (existingDutyAssignmentResult.rowCount) {
+		throw new Error("Duty is already covered on this date");
+	}
+
 	const result = await pool.query(
 		`INSERT INTO replacement_assignments (
-			absent_driver_number,
-			replacement_driver_number,
-			duty_number,
-			assignment_date
-		)
-		VALUES ($1, $2, $3, $4)
-		RETURNING *`,
+      absent_driver_number,
+      replacement_driver_number,
+      duty_number,
+      assignment_date
+    )
+    VALUES ($1, $2, $3, $4)
+    RETURNING *`,
 		[absentDriverNumber, replacementDriverNumber, dutyNumber, assignmentDate],
 	);
 
