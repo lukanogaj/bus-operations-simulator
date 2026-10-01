@@ -99,6 +99,24 @@
 	font-size: 14px;
 }
 
+.coveredStatus,
+.uncoveredStatus {
+	display: inline-block;
+	padding: 5px 10px;
+	border-radius: 6px;
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.coveredStatus {
+	background: #166534;
+}
+
+.uncoveredStatus {
+	background: #b91c1c;
+}
+
 .candidate {
 	display: flex;
 	align-items: center;

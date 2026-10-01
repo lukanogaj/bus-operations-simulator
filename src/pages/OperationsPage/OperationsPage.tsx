@@ -190,7 +190,7 @@ const OperationsPage = () => {
 						<div className={styles.replacements}>
 							{issue.coverageStatus === "COVERED" && issue.replacementDriver ? (
 								<>
-									<h3>COVERED</h3>
+									<h3 className={styles.coveredStatus}>COVERED</h3>
 
 									<div className={styles.candidate}>
 										<div>
@@ -205,6 +205,7 @@ const OperationsPage = () => {
 								</>
 							) : (
 								<>
+									<h3 className={styles.uncoveredStatus}>UNCOVERED</h3>
 									<h3>Replacement candidates</h3>
 
 									{issue.replacementCandidates.length === 0 ? (
