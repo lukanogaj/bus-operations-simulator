@@ -1,0 +1,163 @@
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.header h1 {
+	margin: 0;
+	font-size: 32px;
+}
+
+.header p {
+	margin: 6px 0 0;
+	color: #6b7280;
+}
+
+.form {
+	padding: 24px;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	background: #ffffff;
+	color: #111827;
+}
+
+.form h2 {
+	margin: 0 0 20px;
+	font-size: 20px;
+	color: #111827;
+}
+
+.formGrid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.form label {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	color: #374151;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.form input,
+.form textarea {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 10px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #ffffff;
+	color: #111827;
+	font: inherit;
+}
+
+.form input::placeholder,
+.form textarea::placeholder {
+	color: #6b7280;
+}
+
+.form input:focus,
+.form textarea:focus {
+	outline: 2px solid #111827;
+	outline-offset: 1px;
+}
+
+.descriptionField {
+	margin-top: 16px;
+}
+
+.form textarea {
+	min-height: 110px;
+	resize: vertical;
+}
+
+.form button,
+.incidentCard button {
+	margin-top: 16px;
+	padding: 10px 16px;
+	border: 0;
+	border-radius: 8px;
+	background: #111827;
+	color: #ffffff;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.form button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.error {
+	padding: 12px 16px;
+	border-radius: 8px;
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.incidentSection h2 {
+	margin: 0 0 16px;
+	font-size: 22px;
+}
+
+.incidentList {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.incidentCard {
+	padding: 20px;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	background: #ffffff;
+	color: #111827;
+}
+
+.cardHeader {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.cardHeader h3 {
+	margin: 0 0 8px;
+}
+
+.open,
+.resolved {
+	display: inline-block;
+	padding: 4px 8px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.open {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.resolved {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.details {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 16px;
+	color: #6b7280;
+	font-size: 14px;
+}
+
+@media (max-width: 900px) {
+	.formGrid {
+		grid-template-columns: 1fr;
+	}
+}

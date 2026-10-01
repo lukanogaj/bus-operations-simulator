@@ -9,6 +9,11 @@ import {
 	createReplacementAssignment,
 	generateOperationalIssues,
 } from "./services/operationsService";
+import {
+	createIncident,
+	getIncidents,
+	resolveIncident,
+} from "./services/incidentService";
 
 const app = express();
 const port = 3000;
@@ -257,6 +262,84 @@ app.post("/operations/assignments", authenticateUser, async (req, res) => {
 				: "Failed to create replacement assignment";
 
 		res.status(400).json({
+			error: message,
+		});
+	}
+});
+
+app.get("/incidents", authenticateUser, async (req, res) => {
+	try {
+		const incidents = await getIncidents(pool);
+
+		res.json(incidents);
+	} catch (error) {
+		console.error("Error fetching incidents:", error);
+
+		res.status(500).json({
+			error: "Failed to fetch incidents",
+		});
+	}
+});
+
+app.post("/incidents", authenticateUser, async (req, res) => {
+	try {
+		const { incidentType, description, route, driverNumber } = req.body;
+
+		if (!incidentType || !description) {
+			return res.status(400).json({
+				error: "Incident type and description are required",
+			});
+		}
+
+		const incident = await createIncident(pool, {
+			incidentType,
+			description,
+			route,
+			driverNumber,
+		});
+
+		res.status(201).json(incident);
+	} catch (error) {
+		console.error("Error creating incident:", error);
+
+		if (
+			error instanceof Error &&
+			(error.message === "Driver number does not exist" ||
+				error.message === "Route does not exist")
+		) {
+			return res.status(400).json({
+				error: error.message,
+			});
+		}
+
+		res.status(500).json({
+			error: "Failed to create incident",
+		});
+	}
+});
+
+app.patch("/incidents/:id/resolve", authenticateUser, async (req, res) => {
+	try {
+		const incidentId = Number(req.params.id);
+
+		if (!Number.isInteger(incidentId)) {
+			return res.status(400).json({
+				error: "Invalid incident ID",
+			});
+		}
+
+		const incident = await resolveIncident(pool, incidentId);
+
+		res.json(incident);
+	} catch (error) {
+		console.error("Error resolving incident:", error);
+
+		const message =
+			error instanceof Error ? error.message : "Failed to resolve incident";
+
+		const status = message === "Incident not found" ? 404 : 500;
+
+		res.status(status).json({
 			error: message,
 		});
 	}

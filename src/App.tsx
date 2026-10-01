@@ -4,6 +4,7 @@ import AppLayout from "./layouts/AppLayout/AppLayout";
 import AllocationPage from "./pages/AllocationPage/AllocationPage";
 import DriverPage from "./pages/DriversPage/DriversPage";
 import DutiesPage from "./pages/DutiesPage/DutiesPage";
+import IncidentsPage from "./pages/IncidentsPage/IncidentsPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import OperationsPage from "./pages/OperationsPage/OperationsPage";
 
@@ -53,6 +54,8 @@ const App = () => {
 				<DutiesPage />
 			) : selectedPage === "Operations Board" ? (
 				<OperationsPage />
+			) : selectedPage === "Incidents" ? (
+				<IncidentsPage />
 			) : (
 				<DriverPage />
 			)}
