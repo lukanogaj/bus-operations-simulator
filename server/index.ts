@@ -14,6 +14,7 @@ import {
 	getIncidents,
 	resolveIncident,
 } from "./services/incidentService";
+import { generateSignOnSheet, getSignOnSheet } from "./services/signOnService";
 
 const app = express();
 const port = 3000;
@@ -341,6 +342,71 @@ app.patch("/incidents/:id/resolve", authenticateUser, async (req, res) => {
 
 		res.status(status).json({
 			error: message,
+		});
+	}
+});
+
+app.get(
+	"/sign-on/:date",
+	authenticateUser,
+	async (req: express.Request<{ date: string }>, res: express.Response) => {
+		try {
+			const { date } = req.params;
+			const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+			if (!datePattern.test(date)) {
+				return res.status(400).json({
+					error: "Operational date must use YYYY-MM-DD format",
+				});
+			}
+
+			const sheet = await getSignOnSheet(pool, date);
+
+			res.json(sheet);
+		} catch (error) {
+			console.error("Error fetching sign-on sheet:", error);
+
+			res.status(500).json({
+				error: "Failed to fetch sign-on sheet",
+			});
+		}
+	},
+);
+
+app.post("/sign-on/generate", authenticateUser, async (req, res) => {
+	try {
+		const { operationalDate } = req.body;
+
+		if (!operationalDate) {
+			return res.status(400).json({
+				error: "Operational date is required",
+			});
+		}
+
+		const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+		if (!datePattern.test(operationalDate)) {
+			return res.status(400).json({
+				error: "Operational date must use YYYY-MM-DD format",
+			});
+		}
+
+		const date = new Date(`${operationalDate}T12:00:00`);
+
+		if (Number.isNaN(date.getTime())) {
+			return res.status(400).json({
+				error: "Invalid operational date",
+			});
+		}
+
+		const sheet = await generateSignOnSheet(pool, date);
+
+		res.status(201).json(sheet);
+	} catch (error) {
+		console.error("Error generating sign-on sheet:", error);
+
+		res.status(500).json({
+			error: "Failed to generate sign-on sheet",
 		});
 	}
 });

@@ -7,6 +7,7 @@ import DutiesPage from "./pages/DutiesPage/DutiesPage";
 import IncidentsPage from "./pages/IncidentsPage/IncidentsPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import OperationsPage from "./pages/OperationsPage/OperationsPage";
+import SignOnPage from "./pages/SignOnPage/SignOnPage";
 
 type User = {
 	id: number;
@@ -56,6 +57,8 @@ const App = () => {
 				<OperationsPage />
 			) : selectedPage === "Incidents" ? (
 				<IncidentsPage />
+			) : selectedPage === "Sign-On Sheet" ? (
+				<SignOnPage />
 			) : (
 				<DriverPage />
 			)}

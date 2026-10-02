@@ -10,10 +10,10 @@ const navigationItems = [
 	"Dashboard",
 	"Drivers",
 	"Duties",
-	"Vehicles",
 	"Allocation",
 	"Operations Board",
 	"Incidents",
+	"Sign-On Sheet",
 	"Reports",
 	"Admin",
 ];
