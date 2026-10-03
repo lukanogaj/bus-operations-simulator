@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import AppLayout from "./layouts/AppLayout/AppLayout";
+import AdminPage from "./pages/AdminPage/AdminPage";
 import AllocationPage from "./pages/AllocationPage/AllocationPage";
 import DashboardPage from "./pages/DashboardPage/DashboardPage";
 import DriverPage from "./pages/DriversPage/DriversPage";
@@ -13,7 +14,7 @@ import SignOnPage from "./pages/SignOnPage/SignOnPage";
 type User = {
 	id: number;
 	username: string;
-	role: "manager" | "controller";
+	role: "manager" | "garage_supervisor";
 };
 
 const App = () => {
@@ -63,6 +64,8 @@ const App = () => {
 				<IncidentsPage />
 			) : selectedPage === "Sign-On Sheet" ? (
 				<SignOnPage />
+			) : selectedPage === "Admin" && user.role === "manager" ? (
+				<AdminPage />
 			) : (
 				<DriverPage />
 			)}

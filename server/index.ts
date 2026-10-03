@@ -21,11 +21,34 @@ import {
 	markDriverAbsent,
 } from "./services/signOnService";
 import { startSignOnScheduler } from "./services/signOnScheduler";
+import {
+	createUser,
+	deleteUser,
+	getUsers,
+	updateUserPassword,
+	updateUserRole,
+} from "./services/adminService";
 
 const app = express();
 const port = 3000;
 
 const JWT_SECRET = "bus-operations-secret";
+
+type UserRole = "manager" | "garage_supervisor";
+
+type AuthenticatedUser = {
+	userId: number;
+	username: string;
+	role: UserRole;
+};
+
+declare global {
+	namespace Express {
+		interface Request {
+			user?: AuthenticatedUser;
+		}
+	}
+}
 
 app.use(express.json());
 app.use(cors());
@@ -58,7 +81,25 @@ const authenticateUser = (
 	}
 
 	try {
-		jwt.verify(token, JWT_SECRET);
+		const decoded = jwt.verify(token, JWT_SECRET);
+
+		if (
+			typeof decoded !== "object" ||
+			decoded === null ||
+			typeof decoded.userId !== "number" ||
+			typeof decoded.username !== "string" ||
+			(decoded.role !== "manager" && decoded.role !== "garage_supervisor")
+		) {
+			return res.status(401).json({
+				error: "Invalid token payload",
+			});
+		}
+
+		req.user = {
+			userId: decoded.userId,
+			username: decoded.username,
+			role: decoded.role,
+		};
 
 		next();
 	} catch {
@@ -66,6 +107,28 @@ const authenticateUser = (
 			error: "Invalid or expired token",
 		});
 	}
+};
+
+const requireRole = (...allowedRoles: UserRole[]) => {
+	return (
+		req: express.Request,
+		res: express.Response,
+		next: express.NextFunction,
+	) => {
+		if (!req.user) {
+			return res.status(401).json({
+				error: "Authentication required",
+			});
+		}
+
+		if (!allowedRoles.includes(req.user.role)) {
+			return res.status(403).json({
+				error: "Insufficient permissions",
+			});
+		}
+
+		next();
+	};
 };
 
 app.post("/login", async (req, res) => {
@@ -483,6 +546,191 @@ app.patch(
 					: message === "Only a late driver can be marked absent"
 						? 409
 						: 500;
+
+			res.status(status).json({
+				error: message,
+			});
+		}
+	},
+);
+
+/* -------------------------------------------------------------------------- */
+/* Admin API                                                                  */
+/* -------------------------------------------------------------------------- */
+
+app.get(
+	"/admin/users",
+	authenticateUser,
+	requireRole("manager"),
+	async (req, res) => {
+		try {
+			const users = await getUsers(pool);
+
+			res.json(users);
+		} catch (error) {
+			console.error("Error fetching admin users:", error);
+
+			res.status(500).json({
+				error: "Failed to fetch users",
+			});
+		}
+	},
+);
+
+app.post(
+	"/admin/users",
+	authenticateUser,
+	requireRole("manager"),
+	async (req, res) => {
+		try {
+			const { username, password, role } = req.body;
+
+			if (!username || !password || !role) {
+				return res.status(400).json({
+					error: "Username, password and role are required",
+				});
+			}
+
+			if (role !== "manager" && role !== "garage_supervisor") {
+				return res.status(400).json({
+					error: "Invalid user role",
+				});
+			}
+
+			const user = await createUser(pool, {
+				username,
+				password,
+				role,
+			});
+
+			res.status(201).json(user);
+		} catch (error) {
+			console.error("Error creating admin user:", error);
+
+			const message =
+				error instanceof Error ? error.message : "Failed to create user";
+
+			const status = message === "Username already exists" ? 409 : 500;
+
+			res.status(status).json({
+				error: message,
+			});
+		}
+	},
+);
+
+app.patch(
+	"/admin/users/:id/role",
+	authenticateUser,
+	requireRole("manager"),
+	async (req, res) => {
+		try {
+			const userId = Number(req.params.id);
+			const { role } = req.body;
+
+			if (!Number.isInteger(userId) || userId <= 0) {
+				return res.status(400).json({
+					error: "Invalid user ID",
+				});
+			}
+
+			if (role !== "manager" && role !== "garage_supervisor") {
+				return res.status(400).json({
+					error: "Invalid user role",
+				});
+			}
+
+			const user = await updateUserRole(pool, userId, role);
+
+			res.json(user);
+		} catch (error) {
+			console.error("Error updating user role:", error);
+
+			const message =
+				error instanceof Error ? error.message : "Failed to update user role";
+
+			const status = message === "User not found" ? 404 : 500;
+
+			res.status(status).json({
+				error: message,
+			});
+		}
+	},
+);
+
+app.patch(
+	"/admin/users/:id/password",
+	authenticateUser,
+	requireRole("manager"),
+	async (req, res) => {
+		try {
+			const userId = Number(req.params.id);
+			const { password } = req.body;
+
+			if (!Number.isInteger(userId) || userId <= 0) {
+				return res.status(400).json({
+					error: "Invalid user ID",
+				});
+			}
+
+			if (!password) {
+				return res.status(400).json({
+					error: "Password is required",
+				});
+			}
+
+			await updateUserPassword(pool, userId, password);
+
+			res.json({
+				message: "Password updated successfully",
+			});
+		} catch (error) {
+			console.error("Error updating user password:", error);
+
+			const message =
+				error instanceof Error
+					? error.message
+					: "Failed to update user password";
+
+			const status = message === "User not found" ? 404 : 500;
+
+			res.status(status).json({
+				error: message,
+			});
+		}
+	},
+);
+
+app.delete(
+	"/admin/users/:id",
+	authenticateUser,
+	requireRole("manager"),
+	async (req, res) => {
+		try {
+			const userId = Number(req.params.id);
+
+			if (!Number.isInteger(userId) || userId <= 0) {
+				return res.status(400).json({
+					error: "Invalid user ID",
+				});
+			}
+
+			if (req.user?.userId === userId) {
+				return res.status(400).json({
+					error: "You cannot delete your own account",
+				});
+			}
+
+			await deleteUser(pool, userId);
+
+			res.status(204).send();
+		} catch (error) {
+			console.error("Error deleting admin user:", error);
+
+			const message =
+				error instanceof Error ? error.message : "Failed to delete user";
+
+			const status = message === "User not found" ? 404 : 500;
 
 			res.status(status).json({
 				error: message,

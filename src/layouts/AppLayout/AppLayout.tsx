@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 
-import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import MainContent from "../../components/MainContent/MainContent";
+import Sidebar from "../../components/Sidebar/Sidebar";
 
 import styles from "./AppLayout.module.css";
 
 type User = {
 	id: number;
 	username: string;
-	role: "manager" | "controller";
+	role: "manager" | "garage_supervisor";
 };
 
 type AppLayoutProps = {

@@ -5,7 +5,7 @@ import styles from "./LoginPage.module.css";
 type User = {
 	id: number;
 	username: string;
-	role: "manager" | "controller";
+	role: "manager" | "garage_supervisor";
 };
 
 type LoginPageProps = {
@@ -15,6 +15,7 @@ type LoginPageProps = {
 const LoginPage = ({ onLogin }: LoginPageProps) => {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
@@ -41,9 +42,6 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 			if (!response.ok) {
 				throw new Error(data.error || "Login failed");
 			}
-
-			localStorage.setItem("token", data.token);
-			localStorage.setItem("user", JSON.stringify(data.user));
 
 			onLogin(data.user, data.token);
 		} catch (error) {
@@ -84,12 +82,21 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 
 					<input
 						id='password'
-						type='password'
+						type={showPassword ? "text" : "password"}
 						value={password}
 						onChange={(event) => setPassword(event.target.value)}
 						autoComplete='current-password'
 						required
 					/>
+
+					<label>
+						<input
+							type='checkbox'
+							checked={showPassword}
+							onChange={(event) => setShowPassword(event.target.checked)}
+						/>
+						Show password
+					</label>
 
 					{error && <p className={styles.error}>{error}</p>}
 

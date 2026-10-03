@@ -3,7 +3,7 @@ import styles from "./Sidebar.module.css";
 type User = {
 	id: number;
 	username: string;
-	role: "manager" | "controller";
+	role: "manager" | "garage_supervisor";
 };
 
 const navigationItems = [
@@ -35,11 +35,15 @@ const getDisplayName = (username: string) => {
 const Sidebar = ({ onSelect, selectedItem, user, onLogout }: SidebarProps) => {
 	const displayName = getDisplayName(user.username);
 
+	const visibleNavigationItems = navigationItems.filter(
+		(item) => item !== "Admin" || user.role === "manager",
+	);
+
 	return (
 		<aside className={styles.sidebarShell}>
 			<nav>
 				<ul className={styles.navigationList}>
-					{navigationItems.map((item) => (
+					{visibleNavigationItems.map((item) => (
 						<li
 							key={item}
 							className={
@@ -58,7 +62,7 @@ const Sidebar = ({ onSelect, selectedItem, user, onLogout }: SidebarProps) => {
 				<div className={styles.userName}>{displayName}</div>
 
 				<div className={styles.userRole}>
-					{user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+					{user.role === "garage_supervisor" ? "Garage Supervisor" : "Manager"}
 				</div>
 
 				<button
