@@ -45,6 +45,20 @@ type ReplacementAssignmentRow = {
 	duty_number: number;
 };
 
+type SignOnRow = {
+	id: number;
+	operational_date: Date;
+	driver_number: number;
+	first_name: string;
+	last_name: string;
+	duty_number: number;
+	route: string;
+	sign_on: string;
+	sign_off: string;
+	signed_on_at: Date | null;
+	status: string;
+};
+
 const ROTA_START_DATE = new Date("2026-01-01");
 
 const getDayName = (date: Date): DayName => {
@@ -69,6 +83,20 @@ const formatDate = (date: Date) => {
 	return `${year}-${month}-${day}`;
 };
 
+const getSignOnTimes = (operationalDate: string, signOn: string) => {
+	const [hours, minutes] = signOn.split(":").map(Number);
+
+	const signOnTime = new Date(`${operationalDate}T00:00:00`);
+	signOnTime.setHours(hours, minutes, 0, 0);
+
+	const dueTime = new Date(signOnTime.getTime() - 10 * 60 * 1000);
+
+	return {
+		signOnTime,
+		dueTime,
+	};
+};
+
 export const generateSignOnSheet = async (
 	pool: Pool,
 	operationalDate: Date,
@@ -84,25 +112,25 @@ export const generateSignOnSheet = async (
 
 	const driversResult = await pool.query(
 		`SELECT employee_number, status
-		 FROM drivers`,
+     FROM drivers`,
 	);
 
 	const spareDriversResult = await pool.query(
 		`SELECT employee_number, rota_week
-		 FROM drivers
-		 WHERE rota = 'spare'
-		   AND route = 'spare'
-		   AND status = 'available'
-		 ORDER BY employee_number`,
+     FROM drivers
+     WHERE rota = 'spare'
+       AND route = 'spare'
+       AND status = 'available'
+     ORDER BY employee_number`,
 	);
 
 	const assignmentsResult = await pool.query(
 		`SELECT
-			absent_driver_number,
-			replacement_driver_number,
-			duty_number
-		 FROM replacement_assignments
-		 WHERE assignment_date = $1`,
+      absent_driver_number,
+      replacement_driver_number,
+      duty_number
+     FROM replacement_assignments
+     WHERE assignment_date = $1`,
 		[date],
 	);
 
@@ -196,6 +224,7 @@ export const generateSignOnSheet = async (
 							};
 
 							replacementByDuty.set(dutyNumber, replacementAssignment);
+
 							usedReplacementDrivers.add(replacementCandidate.employee_number);
 
 							createdReplacementAssignments += 1;
@@ -211,14 +240,14 @@ export const generateSignOnSheet = async (
 
 				const result = await pool.query(
 					`INSERT INTO sign_on_entries (
-						operational_date,
-						driver_number,
-						duty_number,
-						status
-					)
-					VALUES ($1, $2, $3, 'EXPECTED')
-					ON CONFLICT DO NOTHING
-					RETURNING id`,
+            operational_date,
+            driver_number,
+            duty_number,
+            status
+          )
+          VALUES ($1, $2, $3, 'EXPECTED')
+          ON CONFLICT DO NOTHING
+          RETURNING id`,
 					[date, expectedDriverNumber, dutyNumber],
 				);
 
@@ -238,26 +267,184 @@ export const generateSignOnSheet = async (
 export const getSignOnSheet = async (pool: Pool, operationalDate: string) => {
 	const result = await pool.query(
 		`SELECT
-			se.id,
-			se.operational_date,
-			se.driver_number,
-			d.first_name,
-			d.last_name,
-			se.duty_number,
-			du.route,
-			du.sign_on,
-			du.sign_off,
-			se.signed_on_at,
-			se.status
-		FROM sign_on_entries se
-		JOIN drivers d
-			ON d.employee_number = se.driver_number
-		JOIN duties du
-			ON du.duty_number = se.duty_number
-		WHERE se.operational_date = $1
-		ORDER BY du.sign_on, se.duty_number`,
+      se.id,
+      se.operational_date,
+      se.driver_number,
+      d.first_name,
+      d.last_name,
+      se.duty_number,
+      du.route,
+      du.sign_on,
+      du.sign_off,
+      se.signed_on_at,
+      se.status
+    FROM sign_on_entries se
+    JOIN drivers d
+      ON d.employee_number = se.driver_number
+    JOIN duties du
+      ON du.duty_number = se.duty_number
+    WHERE se.operational_date = $1
+    ORDER BY du.sign_on, se.duty_number`,
 		[operationalDate],
 	);
 
-	return result.rows;
+	const rows = result.rows as SignOnRow[];
+	const now = new Date();
+
+	for (const row of rows) {
+		if (
+			row.status === "SIGNED_ON" ||
+			row.status === "ABSENT" ||
+			row.status === "LATE"
+		) {
+			continue;
+		}
+
+		const { signOnTime } = getSignOnTimes(operationalDate, row.sign_on);
+
+		if (now >= signOnTime) {
+			await pool.query(
+				`UPDATE sign_on_entries
+         SET status = 'LATE'
+         WHERE id = $1
+           AND status NOT IN ('SIGNED_ON', 'ABSENT', 'LATE')`,
+				[row.id],
+			);
+
+			row.status = "LATE";
+		}
+	}
+
+	return rows.map((row) => {
+		if (
+			row.status === "SIGNED_ON" ||
+			row.status === "ABSENT" ||
+			row.status === "LATE"
+		) {
+			return row;
+		}
+
+		const { dueTime } = getSignOnTimes(operationalDate, row.sign_on);
+
+		if (now >= dueTime) {
+			return {
+				...row,
+				status: "DUE",
+			};
+		}
+
+		return {
+			...row,
+			status: "EXPECTED",
+		};
+	});
+};
+
+export const signOnDriver = async (pool: Pool, entryId: number) => {
+	const entryResult = await pool.query(
+		`SELECT
+      se.id,
+      se.operational_date,
+      se.driver_number,
+      se.duty_number,
+      se.status,
+      se.signed_on_at,
+      du.sign_on
+     FROM sign_on_entries se
+     JOIN duties du
+       ON du.duty_number = se.duty_number
+     WHERE se.id = $1`,
+		[entryId],
+	);
+
+	if (entryResult.rowCount === 0) {
+		throw new Error("Sign-on entry not found");
+	}
+
+	const entry = entryResult.rows[0];
+
+	if (entry.status === "SIGNED_ON") {
+		throw new Error("Driver is already signed on");
+	}
+
+	if (entry.status === "ABSENT") {
+		throw new Error("Driver is marked absent — contact the Counter");
+	}
+
+	const operationalDate = formatDate(new Date(entry.operational_date));
+
+	const { signOnTime } = getSignOnTimes(operationalDate, entry.sign_on);
+
+	const now = new Date();
+
+	if (entry.status === "LATE" || now >= signOnTime) {
+		if (entry.status !== "LATE") {
+			await pool.query(
+				`UPDATE sign_on_entries
+         SET status = 'LATE'
+         WHERE id = $1
+           AND status NOT IN ('SIGNED_ON', 'ABSENT')`,
+				[entryId],
+			);
+		}
+
+		throw new Error("Too late to sign on — contact the Counter");
+	}
+
+	const result = await pool.query(
+		`UPDATE sign_on_entries
+     SET
+      status = 'SIGNED_ON',
+      signed_on_at = CURRENT_TIMESTAMP
+     WHERE id = $1
+       AND status NOT IN ('SIGNED_ON', 'ABSENT', 'LATE')
+     RETURNING
+      id,
+      operational_date,
+      driver_number,
+      duty_number,
+      signed_on_at,
+      status`,
+		[entryId],
+	);
+
+	if (result.rowCount === 0) {
+		throw new Error("Unable to sign on driver");
+	}
+
+	return result.rows[0];
+};
+
+export const markDriverAbsent = async (pool: Pool, entryId: number) => {
+	const result = await pool.query(
+		`UPDATE sign_on_entries
+     SET status = 'ABSENT'
+     WHERE id = $1
+       AND status = 'LATE'
+     RETURNING
+      id,
+      operational_date,
+      driver_number,
+      duty_number,
+      signed_on_at,
+      status`,
+		[entryId],
+	);
+
+	if (result.rowCount === 0) {
+		const entryResult = await pool.query(
+			`SELECT status
+       FROM sign_on_entries
+       WHERE id = $1`,
+			[entryId],
+		);
+
+		if (entryResult.rowCount === 0) {
+			throw new Error("Sign-on entry not found");
+		}
+
+		throw new Error("Only a late driver can be marked absent");
+	}
+
+	return result.rows[0];
 };

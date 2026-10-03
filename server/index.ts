@@ -14,7 +14,12 @@ import {
 	getIncidents,
 	resolveIncident,
 } from "./services/incidentService";
-import { generateSignOnSheet, getSignOnSheet } from "./services/signOnService";
+import {
+	generateSignOnSheet,
+	getSignOnSheet,
+	signOnDriver,
+	markDriverAbsent,
+} from "./services/signOnService";
 
 const app = express();
 const port = 3000;
@@ -74,8 +79,8 @@ app.post("/login", async (req, res) => {
 
 		const result = await pool.query(
 			`SELECT id, username, password_hash, role
-			 FROM users
-			 WHERE username = $1`,
+       FROM users
+       WHERE username = $1`,
 			[username],
 		);
 
@@ -410,6 +415,80 @@ app.post("/sign-on/generate", authenticateUser, async (req, res) => {
 		});
 	}
 });
+
+app.patch(
+	"/sign-on/:id/sign-on",
+	authenticateUser,
+	async (req: express.Request<{ id: string }>, res: express.Response) => {
+		try {
+			const entryId = Number(req.params.id);
+
+			if (!Number.isInteger(entryId) || entryId <= 0) {
+				return res.status(400).json({
+					error: "Invalid sign-on entry ID",
+				});
+			}
+
+			const entry = await signOnDriver(pool, entryId);
+
+			res.json(entry);
+		} catch (error) {
+			console.error("Error signing on driver:", error);
+
+			const message =
+				error instanceof Error ? error.message : "Failed to sign on driver";
+
+			const status =
+				message === "Sign-on entry not found"
+					? 404
+					: message === "Too late to sign on — contact the Counter" ||
+						  message === "Driver is already signed on" ||
+						  message === "Driver is marked absent — contact the Counter"
+						? 409
+						: 500;
+
+			res.status(status).json({
+				error: message,
+			});
+		}
+	},
+);
+
+app.patch(
+	"/sign-on/:id/absent",
+	authenticateUser,
+	async (req: express.Request<{ id: string }>, res: express.Response) => {
+		try {
+			const entryId = Number(req.params.id);
+
+			if (!Number.isInteger(entryId) || entryId <= 0) {
+				return res.status(400).json({
+					error: "Invalid sign-on entry ID",
+				});
+			}
+
+			const entry = await markDriverAbsent(pool, entryId);
+
+			res.json(entry);
+		} catch (error) {
+			console.error("Error marking driver absent:", error);
+
+			const message =
+				error instanceof Error ? error.message : "Failed to mark driver absent";
+
+			const status =
+				message === "Sign-on entry not found"
+					? 404
+					: message === "Only a late driver can be marked absent"
+						? 409
+						: 500;
+
+			res.status(status).json({
+				error: message,
+			});
+		}
+	},
+);
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);

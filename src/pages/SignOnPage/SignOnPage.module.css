@@ -14,13 +14,13 @@
 	margin: 0;
 	font-size: 28px;
 	font-weight: 700;
-	color: #1f2937;
+	color: #f9fafb;
 }
 
 .subtitle {
 	margin: 6px 0 0;
 	font-size: 14px;
-	color: #6b7280;
+	color: #cbd5e1;
 }
 
 .summary {
@@ -41,6 +41,17 @@
 .summaryValue {
 	font-size: 20px;
 	color: #111827;
+}
+
+.actionError {
+	margin-bottom: 16px;
+	padding: 12px 16px;
+	border: 1px solid #fecaca;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #991b1b;
+	background: #fee2e2;
 }
 
 .tableWrapper {
@@ -123,6 +134,52 @@
 .absent {
 	color: #991b1b;
 	background: #fee2e2;
+}
+
+.signOnButton {
+	min-width: 92px;
+	padding: 7px 12px;
+	border: none;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 700;
+	color: #ffffff;
+	background: #2563eb;
+	cursor: pointer;
+}
+
+.signOnButton:hover:not(:disabled) {
+	background: #1d4ed8;
+}
+
+.signOnButton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.absentButton {
+	min-width: 110px;
+	padding: 7px 12px;
+	border: none;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 700;
+	color: #ffffff;
+	background: #dc2626;
+	cursor: pointer;
+}
+
+.absentButton:hover:not(:disabled) {
+	background: #b91c1c;
+}
+
+.absentButton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.noAction {
+	color: #9ca3af;
 }
 
 .message {
