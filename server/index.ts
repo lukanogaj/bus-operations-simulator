@@ -20,6 +20,7 @@ import {
 	signOnDriver,
 	markDriverAbsent,
 } from "./services/signOnService";
+import { startSignOnScheduler } from "./services/signOnScheduler";
 
 const app = express();
 const port = 3000;
@@ -492,4 +493,6 @@ app.patch(
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
+
+	startSignOnScheduler(pool);
 });
