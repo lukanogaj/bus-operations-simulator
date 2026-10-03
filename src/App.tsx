@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import AppLayout from "./layouts/AppLayout/AppLayout";
 import AllocationPage from "./pages/AllocationPage/AllocationPage";
+import DashboardPage from "./pages/DashboardPage/DashboardPage";
 import DriverPage from "./pages/DriversPage/DriversPage";
 import DutiesPage from "./pages/DutiesPage/DutiesPage";
 import IncidentsPage from "./pages/IncidentsPage/IncidentsPage";
@@ -16,7 +17,7 @@ type User = {
 };
 
 const App = () => {
-	const [selectedPage, setSelectedPage] = useState("Drivers");
+	const [selectedPage, setSelectedPage] = useState("Dashboard");
 
 	const [user, setUser] = useState<User | null>(() => {
 		const storedUser = localStorage.getItem("user");
@@ -29,6 +30,7 @@ const App = () => {
 		localStorage.setItem("user", JSON.stringify(loggedInUser));
 
 		setUser(loggedInUser);
+		setSelectedPage("Dashboard");
 	};
 
 	const handleLogout = () => {
@@ -36,7 +38,7 @@ const App = () => {
 		localStorage.removeItem("user");
 
 		setUser(null);
-		setSelectedPage("Drivers");
+		setSelectedPage("Dashboard");
 	};
 
 	if (!user) {
@@ -49,7 +51,9 @@ const App = () => {
 			selectedPage={selectedPage}
 			user={user}
 			onLogout={handleLogout}>
-			{selectedPage === "Allocation" ? (
+			{selectedPage === "Dashboard" ? (
+				<DashboardPage />
+			) : selectedPage === "Allocation" ? (
 				<AllocationPage />
 			) : selectedPage === "Duties" ? (
 				<DutiesPage />
