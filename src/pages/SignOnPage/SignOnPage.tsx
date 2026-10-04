@@ -1,264 +1,260 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import styles from "./SignOnPage.module.css";
 
 type SignOnEntry = {
-  id: number;
-  operational_date: string;
-  driver_number: number;
-  first_name: string;
-  last_name: string;
-  duty_number: number;
-  route: string;
-  sign_on: string;
-  sign_off: string;
-  signed_on_at: string | null;
-  status: "EXPECTED" | "DUE" | "SIGNED_ON" | "LATE" | "ABSENT";
+	id: number;
+	operational_date: string;
+	driver_number: number;
+	first_name: string;
+	last_name: string;
+	duty_number: number;
+	route: string;
+	sign_on: string;
+	sign_off: string;
+	signed_on_at: string | null;
+	status: "EXPECTED" | "DUE" | "SIGNED_ON" | "LATE" | "ABSENT";
 };
 
-const TEST_OPERATIONAL_DATE = "2026-10-03";
+const getLocalOperationalDate = () => {
+	const now = new Date();
+
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, "0");
+	const day = String(now.getDate()).padStart(2, "0");
+
+	return `${year}-${month}-${day}`;
+};
 
 const SignOnPage = () => {
-  const [entries, setEntries] = useState<SignOnEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [actionError, setActionError] = useState("");
-  const [signingOnId, setSigningOnId] = useState<number | null>(null);
-  const [markingAbsentId, setMarkingAbsentId] = useState<number | null>(null);
+	const [entries, setEntries] = useState<SignOnEntry[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState("");
+	const [actionError, setActionError] = useState("");
+	const [signingOnId, setSigningOnId] = useState<number | null>(null);
+	const [markingAbsentId, setMarkingAbsentId] = useState<number | null>(null);
 
-  const fetchSignOnSheet = async () => {
-    const token = localStorage.getItem("token");
+	const operationalDate = getLocalOperationalDate();
 
-    const response = await fetch(
-      `http://localhost:3000/sign-on/${TEST_OPERATIONAL_DATE}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
+	const fetchSignOnSheet = useCallback(async () => {
+		const token = localStorage.getItem("token");
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch sign-on sheet");
-    }
+		const response = await fetch(
+			`http://localhost:3000/sign-on/${operationalDate}`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			},
+		);
 
-    const data: SignOnEntry[] = await response.json();
+		if (!response.ok) {
+			throw new Error("Failed to fetch sign-on sheet");
+		}
 
-    setEntries(data);
-  };
+		const data: SignOnEntry[] = await response.json();
 
-  useEffect(() => {
-    const loadSignOnSheet = async () => {
-      try {
-        setLoading(true);
-        setError("");
+		setEntries(data);
+	}, [operationalDate]);
 
-        await fetchSignOnSheet();
-      } catch (error) {
-        console.error("Error fetching sign-on sheet:", error);
-        setError("Unable to load Sign-On Sheet.");
-      } finally {
-        setLoading(false);
-      }
-    };
+	useEffect(() => {
+		const loadSignOnSheet = async () => {
+			try {
+				setLoading(true);
+				setError("");
 
-    loadSignOnSheet();
-  }, []);
+				await fetchSignOnSheet();
+			} catch (error) {
+				console.error("Error fetching sign-on sheet:", error);
+				setError("Unable to load Sign-On Sheet.");
+			} finally {
+				setLoading(false);
+			}
+		};
 
-  const handleSignOn = async (entryId: number) => {
-    try {
-      setSigningOnId(entryId);
-      setActionError("");
+		loadSignOnSheet();
+	}, [fetchSignOnSheet]);
 
-      const token = localStorage.getItem("token");
+	const handleSignOn = async (entryId: number) => {
+		try {
+			setSigningOnId(entryId);
+			setActionError("");
 
-      const response = await fetch(
-        `http://localhost:3000/sign-on/${entryId}/sign-on`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+			const token = localStorage.getItem("token");
 
-      const data = await response.json();
+			const response = await fetch(
+				`http://localhost:3000/sign-on/${entryId}/sign-on`,
+				{
+					method: "PATCH",
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				},
+			);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to sign on driver");
-      }
+			const data = await response.json();
 
-      await fetchSignOnSheet();
-    } catch (error) {
-      console.error("Error signing on driver:", error);
+			if (!response.ok) {
+				throw new Error(data.error || "Failed to sign on driver");
+			}
 
-      const message =
-        error instanceof Error ? error.message : "Failed to sign on driver";
+			await fetchSignOnSheet();
+		} catch (error) {
+			console.error("Error signing on driver:", error);
 
-      setActionError(message);
+			const message =
+				error instanceof Error ? error.message : "Failed to sign on driver";
 
-      try {
-        await fetchSignOnSheet();
-      } catch (refreshError) {
-        console.error("Error refreshing sign-on sheet:", refreshError);
-      }
-    } finally {
-      setSigningOnId(null);
-    }
-  };
+			setActionError(message);
 
-  const handleMarkAbsent = async (entryId: number) => {
-    try {
-      setMarkingAbsentId(entryId);
-      setActionError("");
+			try {
+				await fetchSignOnSheet();
+			} catch (refreshError) {
+				console.error("Error refreshing sign-on sheet:", refreshError);
+			}
+		} finally {
+			setSigningOnId(null);
+		}
+	};
 
-      const token = localStorage.getItem("token");
+	const handleMarkAbsent = async (entryId: number) => {
+		try {
+			setMarkingAbsentId(entryId);
+			setActionError("");
 
-      const response = await fetch(
-        `http://localhost:3000/sign-on/${entryId}/absent`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+			const token = localStorage.getItem("token");
 
-      const data = await response.json();
+			const response = await fetch(
+				`http://localhost:3000/sign-on/${entryId}/absent`,
+				{
+					method: "PATCH",
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				},
+			);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to mark driver absent");
-      }
+			const data = await response.json();
 
-      await fetchSignOnSheet();
-    } catch (error) {
-      console.error("Error marking driver absent:", error);
+			if (!response.ok) {
+				throw new Error(data.error || "Failed to mark driver absent");
+			}
 
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to mark driver absent";
+			await fetchSignOnSheet();
+		} catch (error) {
+			console.error("Error marking driver absent:", error);
 
-      setActionError(message);
+			const message =
+				error instanceof Error ? error.message : "Failed to mark driver absent";
 
-      try {
-        await fetchSignOnSheet();
-      } catch (refreshError) {
-        console.error("Error refreshing sign-on sheet:", refreshError);
-      }
-    } finally {
-      setMarkingAbsentId(null);
-    }
-  };
+			setActionError(message);
 
-  if (loading) {
-    return <div className={styles.message}>Loading Sign-On Sheet...</div>;
-  }
+			try {
+				await fetchSignOnSheet();
+			} catch (refreshError) {
+				console.error("Error refreshing sign-on sheet:", refreshError);
+			}
+		} finally {
+			setMarkingAbsentId(null);
+		}
+	};
 
-  if (error) {
-    return <div className={styles.error}>{error}</div>;
-  }
+	if (loading) {
+		return <div className={styles.message}>Loading Sign-On Sheet...</div>;
+	}
 
-  return (
-    <section className={styles.page}>
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.title}>Sign-On Sheet</h1>
-          <p className={styles.subtitle}>
-            Operational date: {TEST_OPERATIONAL_DATE}
-          </p>
-        </div>
+	if (error) {
+		return <div className={styles.error}>{error}</div>;
+	}
 
-        <div className={styles.summary}>
-          <span className={styles.summaryLabel}>Covered duties</span>
-          <strong className={styles.summaryValue}>{entries.length}</strong>
-        </div>
-      </div>
+	return (
+		<section className={styles.page}>
+			<div className={styles.pageHeader}>
+				<div>
+					<h1 className={styles.title}>Sign-On Sheet</h1>
+					<p className={styles.subtitle}>Operational date: {operationalDate}</p>
+				</div>
 
-      {actionError && (
-        <div className={styles.actionError}>{actionError}</div>
-      )}
+				<div className={styles.summary}>
+					<span className={styles.summaryLabel}>Covered duties</span>
+					<strong className={styles.summaryValue}>{entries.length}</strong>
+				</div>
+			</div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Duty</th>
-              <th>Route</th>
-              <th>Employee No.</th>
-              <th>Driver</th>
-              <th>Sign On</th>
-              <th>Sign Off</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+			{actionError && <div className={styles.actionError}>{actionError}</div>}
 
-          <tbody>
-            {entries.map((entry) => {
-              const canSignOn =
-                entry.status === "EXPECTED" || entry.status === "DUE";
+			<div className={styles.tableWrapper}>
+				<table className={styles.table}>
+					<thead>
+						<tr>
+							<th>Duty</th>
+							<th>Route</th>
+							<th>Employee No.</th>
+							<th>Driver</th>
+							<th>Sign On</th>
+							<th>Sign Off</th>
+							<th>Status</th>
+							<th>Action</th>
+						</tr>
+					</thead>
 
-              const isSigningOn = signingOnId === entry.id;
-              const isMarkingAbsent = markingAbsentId === entry.id;
+					<tbody>
+						{entries.map((entry) => {
+							const canSignOn =
+								entry.status === "EXPECTED" || entry.status === "DUE";
 
-              return (
-                <tr key={entry.id}>
-                  <td className={styles.dutyNumber}>{entry.duty_number}</td>
+							const isSigningOn = signingOnId === entry.id;
+							const isMarkingAbsent = markingAbsentId === entry.id;
 
-                  <td>{entry.route}</td>
+							return (
+								<tr key={entry.id}>
+									<td className={styles.dutyNumber}>{entry.duty_number}</td>
+									<td>{entry.route}</td>
+									<td>{entry.driver_number}</td>
+									<td>
+										{entry.first_name} {entry.last_name}
+									</td>
+									<td>{entry.sign_on}</td>
+									<td>{entry.sign_off}</td>
 
-                  <td>{entry.driver_number}</td>
+									<td>
+										<span
+											className={`${styles.status} ${
+												styles[entry.status.toLowerCase()]
+											}`}>
+											{entry.status.replace("_", " ")}
+										</span>
+									</td>
 
-                  <td>
-                    {entry.first_name} {entry.last_name}
-                  </td>
-
-                  <td>{entry.sign_on}</td>
-
-                  <td>{entry.sign_off}</td>
-
-                  <td>
-                    <span
-                      className={`${styles.status} ${
-                        styles[entry.status.toLowerCase()]
-                      }`}
-                    >
-                      {entry.status.replace("_", " ")}
-                    </span>
-                  </td>
-
-                  <td>
-                    {canSignOn ? (
-                      <button
-                        type="button"
-                        className={styles.signOnButton}
-                        disabled={isSigningOn}
-                        onClick={() => handleSignOn(entry.id)}
-                      >
-                        {isSigningOn ? "SIGNING ON..." : "SIGN ON"}
-                      </button>
-                    ) : entry.status === "LATE" ? (
-                      <button
-                        type="button"
-                        className={styles.absentButton}
-                        disabled={isMarkingAbsent}
-                        onClick={() => handleMarkAbsent(entry.id)}
-                      >
-                        {isMarkingAbsent ? "MARKING..." : "MARK ABSENT"}
-                      </button>
-                    ) : (
-                      <span className={styles.noAction}>—</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
+									<td>
+										{canSignOn ? (
+											<button
+												type='button'
+												className={styles.signOnButton}
+												disabled={isSigningOn}
+												onClick={() => handleSignOn(entry.id)}>
+												{isSigningOn ? "SIGNING ON..." : "SIGN ON"}
+											</button>
+										) : entry.status === "LATE" ? (
+											<button
+												type='button'
+												className={styles.absentButton}
+												disabled={isMarkingAbsent}
+												onClick={() => handleMarkAbsent(entry.id)}>
+												{isMarkingAbsent ? "MARKING..." : "MARK ABSENT"}
+											</button>
+										) : (
+											<span className={styles.noAction}>—</span>
+										)}
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</div>
+		</section>
+	);
 };
 
 export default SignOnPage;
