@@ -29,6 +29,7 @@ import {
 	updateUserRole,
 } from "./services/adminService";
 import { getOperationalReport } from "./services/reportService";
+import { recommendReplacement } from "./services/aiAssistantService";
 
 const app = express();
 const port = 3000;
@@ -295,6 +296,69 @@ app.get("/operations/issues", authenticateUser, async (req, res) => {
 		});
 	}
 });
+
+app.post(
+	"/operations/ai-recommendation",
+	authenticateUser,
+	async (req, res) => {
+		try {
+			const { employeeNumber, dutyNumber, assignmentDate } = req.body;
+
+			if (!employeeNumber || !dutyNumber || !assignmentDate) {
+				return res.status(400).json({
+					error:
+						"Employee number, duty number and assignment date are required",
+				});
+			}
+
+			const issues = await generateOperationalIssues(pool);
+
+			const issue = issues.find(
+				(item) =>
+					item.employeeNumber === Number(employeeNumber) &&
+					item.dutyNumber === Number(dutyNumber) &&
+					item.assignmentDate === assignmentDate,
+			);
+
+			if (!issue) {
+				return res.status(404).json({
+					error: "Operational issue not found",
+				});
+			}
+
+			if (issue.coverageStatus === "COVERED") {
+				return res.status(409).json({
+					error: "This issue is already covered",
+				});
+			}
+
+			if (issue.replacementCandidates.length === 0) {
+				return res.status(409).json({
+					error: "No valid replacement candidates available",
+				});
+			}
+
+			const recommendation = await recommendReplacement(
+				issue.replacementCandidates,
+			);
+
+			res.json({
+				recommendation,
+			});
+		} catch (error) {
+			console.error("Error generating AI recommendation:", error);
+
+			const message =
+				error instanceof Error
+					? error.message
+					: "Failed to generate AI recommendation";
+
+			res.status(500).json({
+				error: message,
+			});
+		}
+	},
+);
 
 app.post("/operations/assignments", authenticateUser, async (req, res) => {
 	try {
