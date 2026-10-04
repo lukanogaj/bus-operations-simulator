@@ -9,6 +9,7 @@ import DutiesPage from "./pages/DutiesPage/DutiesPage";
 import IncidentsPage from "./pages/IncidentsPage/IncidentsPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import OperationsPage from "./pages/OperationsPage/OperationsPage";
+import ReportsPage from "./pages/ReportsPage/ReportsPage";
 import SignOnPage from "./pages/SignOnPage/SignOnPage";
 
 type User = {
@@ -64,6 +65,8 @@ const App = () => {
 				<IncidentsPage />
 			) : selectedPage === "Sign-On Sheet" ? (
 				<SignOnPage />
+			) : selectedPage === "Reports" ? (
+				<ReportsPage />
 			) : selectedPage === "Admin" && user.role === "manager" ? (
 				<AdminPage />
 			) : (

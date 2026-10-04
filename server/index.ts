@@ -28,6 +28,7 @@ import {
 	updateUserPassword,
 	updateUserRole,
 } from "./services/adminService";
+import { getOperationalReport } from "./services/reportService";
 
 const app = express();
 const port = 3000;
@@ -143,8 +144,8 @@ app.post("/login", async (req, res) => {
 
 		const result = await pool.query(
 			`SELECT id, username, password_hash, role
-       FROM users
-       WHERE username = $1`,
+			 FROM users
+			 WHERE username = $1`,
 			[username],
 		);
 
@@ -553,6 +554,55 @@ app.patch(
 		}
 	},
 );
+
+/* -------------------------------------------------------------------------- */
+/* Reports API                                                                */
+/* -------------------------------------------------------------------------- */
+
+app.get("/reports", authenticateUser, async (req, res) => {
+	try {
+		const { from, to } = req.query;
+
+		if (typeof from !== "string" || typeof to !== "string") {
+			return res.status(400).json({
+				error: "From and to dates are required",
+			});
+		}
+
+		const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+		if (!datePattern.test(from) || !datePattern.test(to)) {
+			return res.status(400).json({
+				error: "Dates must use YYYY-MM-DD format",
+			});
+		}
+
+		const fromDate = new Date(`${from}T12:00:00`);
+		const toDate = new Date(`${to}T12:00:00`);
+
+		if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+			return res.status(400).json({
+				error: "Invalid report date range",
+			});
+		}
+
+		if (fromDate > toDate) {
+			return res.status(400).json({
+				error: "From date cannot be after to date",
+			});
+		}
+
+		const report = await getOperationalReport(pool, from, to);
+
+		res.json(report);
+	} catch (error) {
+		console.error("Error generating operational report:", error);
+
+		res.status(500).json({
+			error: "Failed to generate operational report",
+		});
+	}
+});
 
 /* -------------------------------------------------------------------------- */
 /* Admin API                                                                  */
