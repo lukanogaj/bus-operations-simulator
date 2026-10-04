@@ -9,6 +9,7 @@ import DutiesPage from "./pages/DutiesPage/DutiesPage";
 import IncidentsPage from "./pages/IncidentsPage/IncidentsPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import OperationsPage from "./pages/OperationsPage/OperationsPage";
+import PlannedAbsencesPage from "./pages/PlannedAbsencesPage/PlannedAbsencesPage";
 import ReportsPage from "./pages/ReportsPage/ReportsPage";
 import SignOnPage from "./pages/SignOnPage/SignOnPage";
 
@@ -61,6 +62,8 @@ const App = () => {
 				<DutiesPage />
 			) : selectedPage === "Operations Board" ? (
 				<OperationsPage />
+			) : selectedPage === "Planned Absences" ? (
+				<PlannedAbsencesPage />
 			) : selectedPage === "Incidents" ? (
 				<IncidentsPage />
 			) : selectedPage === "Sign-On Sheet" ? (

@@ -12,6 +12,7 @@ const navigationItems = [
 	"Duties",
 	"Allocation",
 	"Operations Board",
+	"Planned Absences",
 	"Incidents",
 	"Sign-On Sheet",
 	"Reports",

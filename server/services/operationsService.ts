@@ -10,6 +10,8 @@ type DriverStatus =
 	| "leaveNotice"
 	| "suspended";
 
+type PlannedAbsenceType = "HOLIDAY" | "TRAINING";
+
 type Driver = {
 	employee_number: number;
 	batch_number: number;
@@ -19,6 +21,11 @@ type Driver = {
 	rota: string;
 	rota_week: number;
 	route: string;
+};
+
+type PlannedAbsenceRow = {
+	driver_number: number;
+	absence_type: PlannedAbsenceType;
 };
 
 type ReplacementCandidate = {
@@ -40,7 +47,7 @@ type OperationalIssue = {
 	employeeNumber: number;
 	firstName: string;
 	lastName: string;
-	status: DriverStatus;
+	status: DriverStatus | PlannedAbsenceType;
 	route: string;
 	rota: string;
 	rotaWeek: number;
@@ -66,7 +73,7 @@ type ReplacementAssignmentRow = {
 	replacement_last_name: string;
 };
 
-const getTodayName = () => {
+const getDateName = (date: Date) => {
 	const days = [
 		"sunday",
 		"monday",
@@ -77,29 +84,42 @@ const getTodayName = () => {
 		"saturday",
 	] as const;
 
-	return days[new Date().getDay()];
+	return days[date.getDay()];
 };
 
-const getTodayDate = () => {
-	const today = new Date();
-
-	const year = today.getFullYear();
-	const month = String(today.getMonth() + 1).padStart(2, "0");
-	const day = String(today.getDate()).padStart(2, "0");
+const formatDate = (date: Date) => {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0");
+	const day = String(date.getDate()).padStart(2, "0");
 
 	return `${year}-${month}-${day}`;
 };
 
 export const generateOperationalIssues = async (
 	pool: Pool,
+	operationalDate = getTodayDate(),
 ): Promise<OperationalIssue[]> => {
-	const currentDate = new Date();
+	const currentDate = new Date(`${operationalDate}T12:00:00`);
 	const startDate = new Date("2026-01-01");
+
+	if (Number.isNaN(currentDate.getTime())) {
+		throw new Error("Invalid operational date");
+	}
 
 	const snapshot = await generateWeeklySnapshot(pool, startDate, currentDate);
 
 	const driversResult = await pool.query(
 		"SELECT * FROM drivers ORDER BY employee_number",
+	);
+
+	const plannedAbsencesResult = await pool.query(
+		`SELECT
+      driver_number,
+      absence_type
+     FROM planned_absences
+     WHERE start_date <= $1
+       AND end_date >= $1`,
+		[operationalDate],
 	);
 
 	const assignmentsResult = await pool.query(
@@ -112,18 +132,30 @@ export const generateOperationalIssues = async (
      FROM replacement_assignments ra
      JOIN drivers d
        ON d.employee_number = ra.replacement_driver_number
-     WHERE ra.assignment_date = CURRENT_DATE`,
+     WHERE ra.assignment_date = $1`,
+		[operationalDate],
 	);
 
 	const drivers: Driver[] = driversResult.rows;
+	const plannedAbsences: PlannedAbsenceRow[] = plannedAbsencesResult.rows;
 	const assignments: ReplacementAssignmentRow[] = assignmentsResult.rows;
+
+	const plannedAbsenceByDriver = new Map<number, PlannedAbsenceType>(
+		plannedAbsences.map((absence) => [
+			absence.driver_number,
+			absence.absence_type,
+		]),
+	);
 
 	const assignedDriverNumbers = new Set<number>(
 		assignments.map((assignment) => assignment.replacement_driver_number),
 	);
 
 	const unavailableDrivers = drivers.filter(
-		(driver) => driver.route !== "spare" && driver.status !== "available",
+		(driver) =>
+			driver.route !== "spare" &&
+			(driver.status !== "available" ||
+				plannedAbsenceByDriver.has(driver.employee_number)),
 	);
 
 	const availableSpareDrivers = drivers.filter(
@@ -131,11 +163,12 @@ export const generateOperationalIssues = async (
 			driver.route === "spare" &&
 			driver.rota === "spare" &&
 			driver.status === "available" &&
+			!plannedAbsenceByDriver.has(driver.employee_number) &&
 			!assignedDriverNumbers.has(driver.employee_number),
 	);
 
-	const todayName = getTodayName();
-	const assignmentDate = getTodayDate();
+	const dateName = getDateName(currentDate);
+	const assignmentDate = operationalDate;
 
 	const issues: OperationalIssue[] = [];
 
@@ -166,7 +199,7 @@ export const generateOperationalIssues = async (
 			continue;
 		}
 
-		const duty = driverRow[todayName];
+		const duty = driverRow[dateName];
 
 		if (typeof duty !== "number") {
 			continue;
@@ -212,7 +245,8 @@ export const generateOperationalIssues = async (
 			employeeNumber: driver.employee_number,
 			firstName: driver.first_name,
 			lastName: driver.last_name,
-			status: driver.status,
+			status:
+				plannedAbsenceByDriver.get(driver.employee_number) ?? driver.status,
 			route: driver.route,
 			rota: driver.rota,
 			rotaWeek: driverRow.rotaWeek,
@@ -251,7 +285,19 @@ export const createReplacementAssignment = async (
 		throw new Error("Absent driver not found");
 	}
 
-	if (absentDriver.status === "available") {
+	const plannedAbsenceResult = await pool.query(
+		`SELECT id
+     FROM planned_absences
+     WHERE driver_number = $1
+       AND start_date <= $2
+       AND end_date >= $2
+     LIMIT 1`,
+		[absentDriverNumber, assignmentDate],
+	);
+
+	const hasPlannedAbsence = plannedAbsenceResult.rows.length > 0;
+
+	if (absentDriver.status === "available" && !hasPlannedAbsence) {
 		throw new Error("Driver is currently available");
 	}
 
@@ -274,6 +320,20 @@ export const createReplacementAssignment = async (
 		replacementDriver.status !== "available"
 	) {
 		throw new Error("Replacement driver is not an available spare");
+	}
+
+	const replacementPlannedAbsenceResult = await pool.query(
+		`SELECT id
+     FROM planned_absences
+     WHERE driver_number = $1
+       AND start_date <= $2
+       AND end_date >= $2
+     LIMIT 1`,
+		[replacementDriverNumber, assignmentDate],
+	);
+
+	if (replacementPlannedAbsenceResult.rows.length > 0) {
+		throw new Error("Replacement driver has a planned absence on this date");
 	}
 
 	const dutyResult = await pool.query(
@@ -342,4 +402,10 @@ export const createReplacementAssignment = async (
 	);
 
 	return result.rows[0];
+};
+
+const getTodayDate = () => {
+	const today = new Date();
+
+	return formatDate(today);
 };

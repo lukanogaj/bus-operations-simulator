@@ -20,11 +20,43 @@
 	color: #94a3b8;
 }
 
+.headerControls {
+	display: flex;
+	align-items: flex-end;
+	gap: 16px;
+}
+
+.dateControl {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.dateControl span {
+	color: #94a3b8;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.dateControl input {
+	padding: 8px 10px;
+	border: 1px solid #475569;
+	border-radius: 8px;
+	background: #0f172a;
+	color: #ffffff;
+	font: inherit;
+	color-scheme: dark;
+}
+
 .issueCount {
 	padding: 8px 14px;
 	border-radius: 8px;
 	background: #1e293b;
 	font-weight: 600;
+}
+
+.loading {
+	color: #94a3b8;
 }
 
 .grid {
@@ -123,6 +155,7 @@
 	justify-content: space-between;
 	gap: 16px;
 	padding: 10px 12px;
+	margin-top: 10px;
 	border-radius: 6px;
 	background: #0f172a;
 }
@@ -172,4 +205,21 @@
 	color: #ffffff;
 	font-size: 14px;
 	font-weight: 600;
+}
+
+@media (max-width: 760px) {
+	.header {
+		flex-direction: column;
+	}
+
+	.headerControls {
+		width: 100%;
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.dateControl input {
+		width: 100%;
+		box-sizing: border-box;
+	}
 }

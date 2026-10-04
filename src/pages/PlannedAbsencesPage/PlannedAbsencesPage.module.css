@@ -1,0 +1,151 @@
+.container {
+	padding: 32px;
+}
+
+.header {
+	margin-bottom: 28px;
+}
+
+.header h1 {
+	margin: 0 0 8px;
+	font-size: 32px;
+}
+
+.header p {
+	margin: 0;
+	color: #94a3b8;
+}
+
+.form {
+	display: grid;
+	grid-template-columns: 2fr 1fr 1fr 1fr 2fr auto;
+	align-items: end;
+	gap: 14px;
+	padding: 20px;
+	margin-bottom: 28px;
+	border: 1px solid #334155;
+	border-radius: 10px;
+	background: #1e293b;
+}
+
+.form label {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.form label span {
+	color: #94a3b8;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.form input,
+.form select {
+	min-height: 38px;
+	padding: 8px 10px;
+	box-sizing: border-box;
+	border: 1px solid #475569;
+	border-radius: 6px;
+	background: #0f172a;
+	color: #ffffff;
+	font: inherit;
+	color-scheme: dark;
+}
+
+.addButton {
+	min-height: 38px;
+	padding: 8px 16px;
+	border: 0;
+	border-radius: 6px;
+	background: #2563eb;
+	color: #ffffff;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.addButton:hover {
+	background: #1d4ed8;
+}
+
+.addButton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.tableWrapper {
+	overflow-x: auto;
+	border: 1px solid #334155;
+	border-radius: 10px;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #1e293b;
+}
+
+.table th,
+.table td {
+	padding: 14px 16px;
+	border-bottom: 1px solid #334155;
+	text-align: left;
+}
+
+.table th {
+	color: #94a3b8;
+	font-size: 12px;
+	text-transform: uppercase;
+}
+
+.table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.typeBadge {
+	display: inline-block;
+	padding: 5px 9px;
+	border-radius: 6px;
+	background: #7f1d1d;
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.deleteButton {
+	padding: 6px 10px;
+	border: 1px solid #ef4444;
+	border-radius: 6px;
+	background: transparent;
+	color: #f87171;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.deleteButton:hover {
+	background: #7f1d1d;
+	color: #ffffff;
+}
+
+.error {
+	margin: 0 0 20px;
+	padding: 12px 14px;
+	border-radius: 8px;
+	background: #7f1d1d;
+	color: #ffffff;
+	font-weight: 600;
+}
+
+.empty {
+	color: #94a3b8;
+}
+
+@media (max-width: 1100px) {
+	.form {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.notesField {
+		grid-column: span 2;
+	}
+}

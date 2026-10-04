@@ -30,6 +30,11 @@ import {
 } from "./services/adminService";
 import { getOperationalReport } from "./services/reportService";
 import { recommendReplacement } from "./services/aiAssistantService";
+import {
+	createPlannedAbsence,
+	deletePlannedAbsence,
+	getPlannedAbsences,
+} from "./services/plannedAbsenceService";
 
 const app = express();
 const port = 3000;
@@ -282,10 +287,23 @@ app.get("/weekly-snapshot", authenticateUser, async (req, res) => {
 		});
 	}
 });
-
 app.get("/operations/issues", authenticateUser, async (req, res) => {
 	try {
-		const issues = await generateOperationalIssues(pool);
+		const { date } = req.query;
+
+		if (date !== undefined && typeof date !== "string") {
+			return res.status(400).json({
+				error: "Invalid operational date",
+			});
+		}
+
+		if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+			return res.status(400).json({
+				error: "Operational date must use YYYY-MM-DD format",
+			});
+		}
+
+		const issues = await generateOperationalIssues(pool, date);
 
 		res.json(issues);
 	} catch (error) {
@@ -619,6 +637,80 @@ app.patch(
 	},
 );
 
+app.get("/planned-absences", authenticateUser, async (req, res) => {
+	try {
+		const absences = await getPlannedAbsences(pool);
+
+		res.json(absences);
+	} catch (error) {
+		console.error("Error fetching planned absences:", error);
+
+		res.status(500).json({
+			error: "Failed to fetch planned absences",
+		});
+	}
+});
+app.post("/planned-absences", authenticateUser, async (req, res) => {
+	try {
+		const { driverNumber, absenceType, startDate, endDate, notes } = req.body;
+
+		if (!driverNumber || !absenceType || !startDate || !endDate) {
+			return res.status(400).json({
+				error:
+					"Driver number, absence type, start date and end date are required",
+			});
+		}
+
+		const absence = await createPlannedAbsence(pool, {
+			driverNumber: Number(driverNumber),
+			absenceType,
+			startDate,
+			endDate,
+			notes,
+		});
+
+		res.status(201).json(absence);
+	} catch (error) {
+		console.error("Error creating planned absence:", error);
+
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to create planned absence";
+
+		res.status(400).json({
+			error: message,
+		});
+	}
+});
+app.delete("/planned-absences/:id", authenticateUser, async (req, res) => {
+	try {
+		const absenceId = Number(req.params.id);
+
+		if (!Number.isInteger(absenceId) || absenceId <= 0) {
+			return res.status(400).json({
+				error: "Invalid planned absence ID",
+			});
+		}
+
+		await deletePlannedAbsence(pool, absenceId);
+
+		res.status(204).send();
+	} catch (error) {
+		console.error("Error deleting planned absence:", error);
+
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to delete planned absence";
+
+		const status = message === "Planned absence not found" ? 404 : 500;
+
+		res.status(status).json({
+			error: message,
+		});
+	}
+});
 /* -------------------------------------------------------------------------- */
 /* Reports API                                                                */
 /* -------------------------------------------------------------------------- */
