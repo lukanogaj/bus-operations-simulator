@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { apiFetch } from "../../config/apiClient";
 import styles from "./ReportsPage.module.css";
 
 type ReportSummary = {
@@ -109,10 +110,8 @@ const ReportsPage = () => {
 		setError("");
 
 		try {
-			const response = await fetch(
-				`http://localhost:3000/reports?from=${encodeURIComponent(
-					fromDate,
-				)}&to=${encodeURIComponent(toDate)}`,
+			const response = await apiFetch(
+				`/reports?from=${encodeURIComponent(fromDate)}&to=${encodeURIComponent(toDate)}`,
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -129,7 +128,6 @@ const ReportsPage = () => {
 			setReport(data);
 		} catch (requestError) {
 			setReport(null);
-
 			setError(
 				requestError instanceof Error
 					? requestError.message
@@ -261,16 +259,13 @@ const ReportsPage = () => {
 										report.signOnHistory.map((entry) => (
 											<tr key={entry.id}>
 												<td>{entry.operationalDate}</td>
-
 												<td>
 													{entry.driverNumber} — {entry.firstName}{" "}
 													{entry.lastName}
 												</td>
-
 												<td>{entry.dutyNumber}</td>
 												<td>{entry.route}</td>
 												<td>{entry.signOn}</td>
-
 												<td>
 													<span
 														className={`${styles.status} ${
@@ -322,19 +317,16 @@ const ReportsPage = () => {
 										report.replacementHistory.map((assignment) => (
 											<tr key={assignment.id}>
 												<td>{assignment.assignmentDate}</td>
-
 												<td>
 													{assignment.absentDriverNumber} —{" "}
 													{assignment.absentFirstName}{" "}
 													{assignment.absentLastName}
 												</td>
-
 												<td>
 													{assignment.replacementDriverNumber} —{" "}
 													{assignment.replacementFirstName}{" "}
 													{assignment.replacementLastName}
 												</td>
-
 												<td>{assignment.dutyNumber}</td>
 												<td>{assignment.route}</td>
 											</tr>
@@ -377,12 +369,10 @@ const ReportsPage = () => {
 										report.incidentHistory.map((incident) => (
 											<tr key={incident.id}>
 												<td>{new Date(incident.createdAt).toLocaleString()}</td>
-
 												<td>{incident.incidentType}</td>
 												<td>{incident.description}</td>
 												<td>{incident.route ?? "—"}</td>
 												<td>{incident.driverNumber ?? "—"}</td>
-
 												<td>
 													<span className={styles.status}>
 														{incident.status}

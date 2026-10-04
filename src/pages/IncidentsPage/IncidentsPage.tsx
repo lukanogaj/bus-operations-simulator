@@ -3,6 +3,8 @@ import type { FormEvent } from "react";
 
 import styles from "./IncidentsPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
+
 type IncidentStatus = "open" | "resolved";
 
 type Incident = {
@@ -32,7 +34,7 @@ const IncidentsPage = () => {
 		try {
 			setError("");
 
-			const response = await fetch("http://localhost:3000/incidents", {
+			const response = await apiFetch("/incidents", {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -65,7 +67,7 @@ const IncidentsPage = () => {
 			setSubmitting(true);
 			setError("");
 
-			const response = await fetch("http://localhost:3000/incidents", {
+			const response = await apiFetch("/incidents", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -80,9 +82,20 @@ const IncidentsPage = () => {
 			});
 
 			if (!response.ok) {
-				const data = await response.json();
+				const text = await response.text();
 
-				throw new Error(data.error || "Failed to create incident");
+				let message = "Failed to create incident";
+
+				if (text) {
+					try {
+						const data = JSON.parse(text);
+						message = data.error || message;
+					} catch {
+						message = text;
+					}
+				}
+
+				throw new Error(message);
 			}
 
 			setIncidentType("");
@@ -104,20 +117,28 @@ const IncidentsPage = () => {
 		try {
 			setError("");
 
-			const response = await fetch(
-				`http://localhost:3000/incidents/${incidentId}/resolve`,
-				{
-					method: "PATCH",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+			const response = await apiFetch(`/incidents/${incidentId}/resolve`, {
+				method: "PATCH",
+				headers: {
+					Authorization: `Bearer ${token}`,
 				},
-			);
+			});
 
 			if (!response.ok) {
-				const data = await response.json();
+				const text = await response.text();
 
-				throw new Error(data.error || "Failed to resolve incident");
+				let message = "Failed to resolve incident";
+
+				if (text) {
+					try {
+						const data = JSON.parse(text);
+						message = data.error || message;
+					} catch {
+						message = text;
+					}
+				}
+
+				throw new Error(message);
 			}
 
 			await fetchIncidents();
@@ -210,6 +231,7 @@ const IncidentsPage = () => {
 								<div className={styles.cardHeader}>
 									<div>
 										<h3>{incident.incidentType}</h3>
+
 										<span
 											className={
 												incident.status === "open"
@@ -227,9 +249,11 @@ const IncidentsPage = () => {
 
 								<div className={styles.details}>
 									<span>Route: {incident.route ?? "Not specified"}</span>
+
 									<span>
 										Driver: {incident.driverNumber ?? "Not specified"}
 									</span>
+
 									<span>
 										Created: {new Date(incident.createdAt).toLocaleString()}
 									</span>

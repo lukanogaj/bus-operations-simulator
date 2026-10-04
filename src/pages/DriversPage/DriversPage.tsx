@@ -5,6 +5,7 @@ import type { Driver } from "../../types/driver";
 
 import styles from "./DriversPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
 const DriverPage = () => {
 	const [drivers, setDrivers] = useState<Driver[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -13,7 +14,7 @@ const DriverPage = () => {
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 
-		fetch("http://localhost:3000/drivers", {
+		apiFetch("/drivers", {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},

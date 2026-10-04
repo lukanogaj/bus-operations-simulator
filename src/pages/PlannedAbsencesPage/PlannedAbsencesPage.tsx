@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState, type SyntheticEvent } from "react";
 
 import styles from "./PlannedAbsencesPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
+
 type Driver = {
 	employeeNumber: number;
 	firstName: string;
@@ -40,12 +42,12 @@ const PlannedAbsencesPage = () => {
 			const token = localStorage.getItem("token");
 
 			const [driversResponse, absencesResponse] = await Promise.all([
-				fetch("http://localhost:3000/drivers", {
+				apiFetch("/drivers", {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				}),
-				fetch("http://localhost:3000/planned-absences", {
+				apiFetch("/planned-absences", {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
@@ -83,7 +85,7 @@ const PlannedAbsencesPage = () => {
 
 			const token = localStorage.getItem("token");
 
-			const response = await fetch("http://localhost:3000/planned-absences", {
+			const response = await apiFetch("/planned-absences", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -98,10 +100,21 @@ const PlannedAbsencesPage = () => {
 				}),
 			});
 
-			const data = await response.json();
-
 			if (!response.ok) {
-				throw new Error(data.error || "Failed to create planned absence");
+				const text = await response.text();
+
+				let message = "Failed to create planned absence";
+
+				if (text) {
+					try {
+						const data = JSON.parse(text);
+						message = data.error || message;
+					} catch {
+						message = text;
+					}
+				}
+
+				throw new Error(message);
 			}
 
 			setDriverNumber("");
@@ -130,24 +143,39 @@ const PlannedAbsencesPage = () => {
 
 			const token = localStorage.getItem("token");
 
-			const response = await fetch(
-				`http://localhost:3000/planned-absences/${absenceId}`,
-				{
-					method: "DELETE",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+			const response = await apiFetch(`/planned-absences/${absenceId}`, {
+				method: "DELETE",
+				headers: {
+					Authorization: `Bearer ${token}`,
 				},
-			);
+			});
 
 			if (!response.ok) {
-				throw new Error("Failed to delete planned absence");
+				const text = await response.text();
+
+				let message = "Failed to delete planned absence";
+
+				if (text) {
+					try {
+						const data = JSON.parse(text);
+						message = data.error || message;
+					} catch {
+						message = text;
+					}
+				}
+
+				throw new Error(message);
 			}
 
 			await loadData();
 		} catch (error) {
 			console.error("Error deleting planned absence:", error);
-			setError("Unable to delete planned absence.");
+
+			setError(
+				error instanceof Error
+					? error.message
+					: "Unable to delete planned absence.",
+			);
 		}
 	};
 

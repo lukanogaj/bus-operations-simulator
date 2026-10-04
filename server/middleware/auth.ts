@@ -1,9 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-export const JWT_SECRET = "bus-operations-secret";
-
 export type UserRole = "manager" | "garage_supervisor";
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!jwtSecret) {
+	throw new Error("JWT_SECRET environment variable is required");
+}
+
+export const JWT_SECRET: string = jwtSecret;
 
 type AuthenticatedUser = {
 	userId: number;

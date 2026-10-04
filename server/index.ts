@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import express from "express";
 import cors from "cors";
 import { Pool } from "pg";
@@ -11,13 +13,19 @@ import { createAdminRouter } from "./routes/adminRoutes";
 import { startSignOnScheduler } from "./services/signOnScheduler";
 
 const app = express();
-const port = 3000;
+const port = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
 app.use(cors());
 
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+	throw new Error("DATABASE_URL environment variable is required");
+}
+
 const pool = new Pool({
-	connectionString: "postgres://localhost:5432/bus_operations_simulator",
+	connectionString: databaseUrl,
 });
 
 app.post("/login", async (req, res) => {
@@ -85,6 +93,14 @@ app.post("/login", async (req, res) => {
 app.use(createCoreRouter(pool));
 app.use(createOperationsRouter(pool));
 app.use(createAdminRouter(pool));
+
+const distPath = path.resolve(process.cwd(), "dist");
+
+app.use(express.static(distPath));
+
+app.use((_req, res) => {
+	res.sendFile(path.join(distPath, "index.html"));
+});
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);

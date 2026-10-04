@@ -2,12 +2,13 @@ import { generateWeeklyRotaPdf } from "../../utils/generateWeeklyRotaPdf";
 
 import styles from "./AllocationPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
 const AllocationPage = () => {
 	const handleViewPdf = async () => {
 		try {
 			const token = localStorage.getItem("token");
 
-			const response = await fetch("http://localhost:3000/weekly-snapshot", {
+			const response = await apiFetch("/weekly-snapshot", {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},

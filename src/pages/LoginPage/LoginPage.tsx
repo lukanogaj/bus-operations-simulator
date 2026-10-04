@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 
 import styles from "./LoginPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
 type User = {
 	id: number;
 	username: string;
@@ -26,7 +27,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 		setLoading(true);
 
 		try {
-			const response = await fetch("http://localhost:3000/login", {
+			const response = await apiFetch("/login", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

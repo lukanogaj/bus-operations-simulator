@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { apiFetch } from "../../config/apiClient";
 import styles from "./SignOnPage.module.css";
 
 type SignOnEntry = {
@@ -39,14 +40,11 @@ const SignOnPage = () => {
 	const fetchSignOnSheet = useCallback(async () => {
 		const token = localStorage.getItem("token");
 
-		const response = await fetch(
-			`http://localhost:3000/sign-on/${operationalDate}`,
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+		const response = await apiFetch(`/sign-on/${operationalDate}`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
 			},
-		);
+		});
 
 		if (!response.ok) {
 			throw new Error("Failed to fetch sign-on sheet");
@@ -82,15 +80,12 @@ const SignOnPage = () => {
 
 			const token = localStorage.getItem("token");
 
-			const response = await fetch(
-				`http://localhost:3000/sign-on/${entryId}/sign-on`,
-				{
-					method: "PATCH",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+			const response = await apiFetch(`/sign-on/${entryId}/sign-on`, {
+				method: "PATCH",
+				headers: {
+					Authorization: `Bearer ${token}`,
 				},
-			);
+			});
 
 			const data = await response.json();
 
@@ -124,15 +119,12 @@ const SignOnPage = () => {
 
 			const token = localStorage.getItem("token");
 
-			const response = await fetch(
-				`http://localhost:3000/sign-on/${entryId}/absent`,
-				{
-					method: "PATCH",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+			const response = await apiFetch(`/sign-on/${entryId}/absent`, {
+				method: "PATCH",
+				headers: {
+					Authorization: `Bearer ${token}`,
 				},
-			);
+			});
 
 			const data = await response.json();
 

@@ -4,6 +4,7 @@ import type { Duty } from "../../types/duty";
 
 import styles from "./DutiesPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
 const DutiesPage = () => {
 	const [duties, setDuties] = useState<Duty[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -12,7 +13,7 @@ const DutiesPage = () => {
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 
-		fetch("http://localhost:3000/duties", {
+		apiFetch("/duties", {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},

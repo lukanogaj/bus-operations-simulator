@@ -3,12 +3,37 @@ import type { FormEvent } from "react";
 
 import styles from "./AdminPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
+
 type UserRole = "manager" | "garage_supervisor";
 
 type AdminUser = {
 	id: number;
 	username: string;
 	role: UserRole;
+};
+
+const getErrorMessage = async (
+	response: Response,
+	fallbackMessage: string,
+): Promise<string> => {
+	const text = await response.text();
+
+	if (!text) {
+		return fallbackMessage;
+	}
+
+	try {
+		const data = JSON.parse(text);
+
+		if (data && typeof data.error === "string") {
+			return data.error;
+		}
+
+		return fallbackMessage;
+	} catch {
+		return text;
+	}
 };
 
 const AdminPage = () => {
@@ -34,17 +59,22 @@ const AdminPage = () => {
 		try {
 			setError("");
 
-			const response = await fetch("http://localhost:3000/admin/users", {
+			const response = await apiFetch("/admin/users", {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
 			});
 
-			const data = await response.json();
-
 			if (!response.ok) {
-				throw new Error(data.error || "Failed to load users");
+				const errorMessage = await getErrorMessage(
+					response,
+					"Failed to load users",
+				);
+
+				throw new Error(errorMessage);
 			}
+
+			const data: AdminUser[] = await response.json();
 
 			setUsers(data);
 		} catch (error) {
@@ -66,7 +96,7 @@ const AdminPage = () => {
 			setError("");
 			setMessage("");
 
-			const response = await fetch("http://localhost:3000/admin/users", {
+			const response = await apiFetch("/admin/users", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -79,10 +109,13 @@ const AdminPage = () => {
 				}),
 			});
 
-			const data = await response.json();
-
 			if (!response.ok) {
-				throw new Error(data.error || "Failed to create user");
+				const errorMessage = await getErrorMessage(
+					response,
+					"Failed to create user",
+				);
+
+				throw new Error(errorMessage);
 			}
 
 			setUsername("");
@@ -106,24 +139,24 @@ const AdminPage = () => {
 			setError("");
 			setMessage("");
 
-			const response = await fetch(
-				`http://localhost:3000/admin/users/${userId}/role`,
-				{
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-						"Authorization": `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						role: newRole,
-					}),
+			const response = await apiFetch(`/admin/users/${userId}/role`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${token}`,
 				},
-			);
-
-			const data = await response.json();
+				body: JSON.stringify({
+					role: newRole,
+				}),
+			});
 
 			if (!response.ok) {
-				throw new Error(data.error || "Failed to update user role");
+				const errorMessage = await getErrorMessage(
+					response,
+					"Failed to update user role",
+				);
+
+				throw new Error(errorMessage);
 			}
 
 			setMessage("User role updated successfully.");
@@ -133,6 +166,8 @@ const AdminPage = () => {
 			setError(
 				error instanceof Error ? error.message : "Failed to update user role",
 			);
+
+			await loadUsers();
 		} finally {
 			setActionUserId(null);
 		}
@@ -150,24 +185,24 @@ const AdminPage = () => {
 			setError("");
 			setMessage("");
 
-			const response = await fetch(
-				`http://localhost:3000/admin/users/${userId}/password`,
-				{
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-						"Authorization": `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						password: newPassword,
-					}),
+			const response = await apiFetch(`/admin/users/${userId}/password`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${token}`,
 				},
-			);
-
-			const data = await response.json();
+				body: JSON.stringify({
+					password: newPassword,
+				}),
+			});
 
 			if (!response.ok) {
-				throw new Error(data.error || "Failed to update password");
+				const errorMessage = await getErrorMessage(
+					response,
+					"Failed to update password",
+				);
+
+				throw new Error(errorMessage);
 			}
 
 			setMessage(`Password updated for ${username}.`);
@@ -194,20 +229,20 @@ const AdminPage = () => {
 			setError("");
 			setMessage("");
 
-			const response = await fetch(
-				`http://localhost:3000/admin/users/${user.id}`,
-				{
-					method: "DELETE",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+			const response = await apiFetch(`/admin/users/${user.id}`, {
+				method: "DELETE",
+				headers: {
+					Authorization: `Bearer ${token}`,
 				},
-			);
+			});
 
 			if (!response.ok) {
-				const data = await response.json();
+				const errorMessage = await getErrorMessage(
+					response,
+					"Failed to delete user",
+				);
 
-				throw new Error(data.error || "Failed to delete user");
+				throw new Error(errorMessage);
 			}
 
 			setMessage("User deleted successfully.");

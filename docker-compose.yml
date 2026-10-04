@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: bus-operations-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bus_operations_simulator
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./server/db/000_schema.sql:/docker-entrypoint-initdb.d/000_schema.sql:ro
+      - ./server/db/001_data.sql:/docker-entrypoint-initdb.d/001_data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bus_operations_simulator"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build: .
+    container_name: bus-operations-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/bus_operations_simulator
+      JWT_SECRET: ${JWT_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

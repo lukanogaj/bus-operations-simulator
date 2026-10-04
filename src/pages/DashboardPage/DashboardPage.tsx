@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import styles from "./DashboardPage.module.css";
 
+import { apiFetch } from "../../config/apiClient";
 type Driver = {
 	employeeNumber: number;
 	status: string;
@@ -65,10 +66,10 @@ const DashboardPage = () => {
 				incidentsResponse,
 				signOnResponse,
 			] = await Promise.all([
-				fetch("http://localhost:3000/drivers", { headers }),
-				fetch("http://localhost:3000/operations/issues", { headers }),
-				fetch("http://localhost:3000/incidents", { headers }),
-				fetch(`http://localhost:3000/sign-on/${operationalDate}`, {
+				apiFetch("/drivers", { headers }),
+				apiFetch("/operations/issues", { headers }),
+				apiFetch("/incidents", { headers }),
+				apiFetch(`/sign-on/${operationalDate}`, {
 					headers,
 				}),
 			]);
