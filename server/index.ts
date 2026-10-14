@@ -3,10 +3,7 @@ import path from "node:path";
 import express from "express";
 import cors from "cors";
 import { Pool } from "pg";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 
-import { JWT_SECRET } from "./middleware/auth";
 import { createCoreRouter } from "./routes/coreRoutes";
 import { createOperationsRouter } from "./routes/operationsRoutes";
 import { createAdminRouter } from "./routes/adminRoutes";
@@ -26,68 +23,6 @@ if (!databaseUrl) {
 
 const pool = new Pool({
 	connectionString: databaseUrl,
-});
-
-app.post("/login", async (req, res) => {
-	try {
-		const { username, password } = req.body;
-
-		if (!username || !password) {
-			return res.status(400).json({
-				error: "Username and password are required",
-			});
-		}
-
-		const result = await pool.query(
-			`SELECT id, username, password_hash, role
-			 FROM users
-			 WHERE username = $1`,
-			[username],
-		);
-
-		const user = result.rows[0];
-
-		if (!user) {
-			return res.status(401).json({
-				error: "Invalid username or password",
-			});
-		}
-
-		const passwordMatches = await bcrypt.compare(password, user.password_hash);
-
-		if (!passwordMatches) {
-			return res.status(401).json({
-				error: "Invalid username or password",
-			});
-		}
-
-		const token = jwt.sign(
-			{
-				userId: user.id,
-				username: user.username,
-				role: user.role,
-			},
-			JWT_SECRET,
-			{
-				expiresIn: "90d",
-			},
-		);
-
-		res.json({
-			token,
-			user: {
-				id: user.id,
-				username: user.username,
-				role: user.role,
-			},
-		});
-	} catch (error) {
-		console.error("Login error:", error);
-
-		res.status(500).json({
-			error: "Login failed",
-		});
-	}
 });
 
 app.use(createCoreRouter(pool));

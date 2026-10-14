@@ -1,7 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import type { Pool } from "pg";
 
-import { authenticateUser } from "../middleware/auth";
 import {
 	createReplacementAssignment,
 	generateOperationalIssues,
@@ -22,7 +21,7 @@ import {
 export const createOperationsRouter = (pool: Pool) => {
 	const router = Router();
 
-	router.get("/operations/issues", authenticateUser, async (req, res) => {
+	router.get("/operations/issues", async (req, res) => {
 		try {
 			const { date } = req.query;
 
@@ -52,7 +51,6 @@ export const createOperationsRouter = (pool: Pool) => {
 
 	router.post(
 		"/operations/ai-recommendation",
-		authenticateUser,
 		async (req, res) => {
 			try {
 				const { employeeNumber, dutyNumber, assignmentDate } = req.body;
@@ -113,7 +111,7 @@ export const createOperationsRouter = (pool: Pool) => {
 		},
 	);
 
-	router.post("/operations/assignments", authenticateUser, async (req, res) => {
+	router.post("/operations/assignments", async (req, res) => {
 		try {
 			const {
 				absentDriverNumber,
@@ -157,7 +155,6 @@ export const createOperationsRouter = (pool: Pool) => {
 
 	router.get(
 		"/sign-on/:date",
-		authenticateUser,
 		async (req: Request<{ date: string }>, res: Response) => {
 			try {
 				const { date } = req.params;
@@ -182,7 +179,7 @@ export const createOperationsRouter = (pool: Pool) => {
 		},
 	);
 
-	router.post("/sign-on/generate", authenticateUser, async (req, res) => {
+	router.post("/sign-on/generate", async (req, res) => {
 		try {
 			const { operationalDate } = req.body;
 
@@ -222,7 +219,6 @@ export const createOperationsRouter = (pool: Pool) => {
 
 	router.patch(
 		"/sign-on/:id/sign-on",
-		authenticateUser,
 		async (req: Request<{ id: string }>, res: Response) => {
 			try {
 				const entryId = Number(req.params.id);
@@ -260,7 +256,6 @@ export const createOperationsRouter = (pool: Pool) => {
 
 	router.patch(
 		"/sign-on/:id/absent",
-		authenticateUser,
 		async (req: Request<{ id: string }>, res: Response) => {
 			try {
 				const entryId = Number(req.params.id);
@@ -296,7 +291,7 @@ export const createOperationsRouter = (pool: Pool) => {
 		},
 	);
 
-	router.get("/planned-absences", authenticateUser, async (req, res) => {
+	router.get("/planned-absences", async (req, res) => {
 		try {
 			const absences = await getPlannedAbsences(pool);
 
@@ -310,7 +305,7 @@ export const createOperationsRouter = (pool: Pool) => {
 		}
 	});
 
-	router.post("/planned-absences", authenticateUser, async (req, res) => {
+	router.post("/planned-absences", async (req, res) => {
 		try {
 			const { driverNumber, absenceType, startDate, endDate, notes } = req.body;
 
@@ -344,7 +339,7 @@ export const createOperationsRouter = (pool: Pool) => {
 		}
 	});
 
-	router.delete("/planned-absences/:id", authenticateUser, async (req, res) => {
+	router.delete("/planned-absences/:id", async (req, res) => {
 		try {
 			const absenceId = Number(req.params.id);
 

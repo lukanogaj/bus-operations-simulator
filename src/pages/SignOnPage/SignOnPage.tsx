@@ -38,11 +38,9 @@ const SignOnPage = () => {
 	const operationalDate = getLocalOperationalDate();
 
 	const fetchSignOnSheet = useCallback(async () => {
-		const token = localStorage.getItem("token");
 
 		const response = await apiFetch(`/sign-on/${operationalDate}`, {
 			headers: {
-				Authorization: `Bearer ${token}`,
 			},
 		});
 
@@ -78,12 +76,10 @@ const SignOnPage = () => {
 			setSigningOnId(entryId);
 			setActionError("");
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch(`/sign-on/${entryId}/sign-on`, {
 				method: "PATCH",
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 
@@ -117,12 +113,10 @@ const SignOnPage = () => {
 			setMarkingAbsentId(entryId);
 			setActionError("");
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch(`/sign-on/${entryId}/absent`, {
 				method: "PATCH",
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 

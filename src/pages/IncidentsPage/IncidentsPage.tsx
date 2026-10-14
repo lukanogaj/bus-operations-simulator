@@ -28,7 +28,6 @@ const IncidentsPage = () => {
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState("");
 
-	const token = localStorage.getItem("token");
 
 	const fetchIncidents = useCallback(async () => {
 		try {
@@ -36,7 +35,6 @@ const IncidentsPage = () => {
 
 			const response = await apiFetch("/incidents", {
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 
@@ -54,7 +52,7 @@ const IncidentsPage = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, [token]);
+	}, []);
 
 	useEffect(() => {
 		fetchIncidents();
@@ -71,7 +69,6 @@ const IncidentsPage = () => {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					incidentType,
@@ -120,7 +117,6 @@ const IncidentsPage = () => {
 			const response = await apiFetch(`/incidents/${incidentId}/resolve`, {
 				method: "PATCH",
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 

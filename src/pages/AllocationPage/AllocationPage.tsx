@@ -6,11 +6,9 @@ import { apiFetch } from "../../config/apiClient";
 const AllocationPage = () => {
 	const handleViewPdf = async () => {
 		try {
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch("/weekly-snapshot", {
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 

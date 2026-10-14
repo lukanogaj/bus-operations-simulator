@@ -17,7 +17,6 @@ type AppLayoutProps = {
 	onSelectNavigation: (item: string) => void;
 	selectedPage: string;
 	user: User;
-	onLogout: () => void;
 };
 
 const AppLayout = ({
@@ -25,7 +24,6 @@ const AppLayout = ({
 	onSelectNavigation,
 	selectedPage,
 	user,
-	onLogout,
 }: AppLayoutProps) => {
 	return (
 		<div className={styles.appFrame}>
@@ -33,7 +31,6 @@ const AppLayout = ({
 				onSelect={onSelectNavigation}
 				selectedItem={selectedPage}
 				user={user}
-				onLogout={onLogout}
 			/>
 
 			<section className={styles.workspaceArea}>

@@ -1,7 +1,6 @@
 import { Router } from "express";
 import type { Pool } from "pg";
 
-import { authenticateUser } from "../middleware/auth";
 import { generateWeeklySnapshot } from "../services/rotaService";
 import {
 	createIncident,
@@ -13,7 +12,7 @@ import { getOperationalReport } from "../services/reportService";
 export const createCoreRouter = (pool: Pool) => {
 	const router = Router();
 
-	router.get("/drivers", authenticateUser, async (req, res) => {
+	router.get("/drivers", async (req, res) => {
 		try {
 			const result = await pool.query(
 				"SELECT * FROM drivers ORDER BY employee_number",
@@ -40,7 +39,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.get("/duties", authenticateUser, async (req, res) => {
+	router.get("/duties", async (req, res) => {
 		try {
 			const result = await pool.query(
 				"SELECT * FROM duties ORDER BY duty_number",
@@ -64,7 +63,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.get("/routes", authenticateUser, async (req, res) => {
+	router.get("/routes", async (req, res) => {
 		try {
 			const result = await pool.query(
 				"SELECT * FROM routes ORDER BY route_number",
@@ -84,7 +83,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.get("/weekly-snapshot", authenticateUser, async (req, res) => {
+	router.get("/weekly-snapshot", async (req, res) => {
 		try {
 			const startDate = new Date("2026-01-01");
 			const currentDate = new Date();
@@ -105,7 +104,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.get("/incidents", authenticateUser, async (req, res) => {
+	router.get("/incidents", async (req, res) => {
 		try {
 			const incidents = await getIncidents(pool);
 
@@ -119,7 +118,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.post("/incidents", authenticateUser, async (req, res) => {
+	router.post("/incidents", async (req, res) => {
 		try {
 			const { incidentType, description, route, driverNumber } = req.body;
 
@@ -156,7 +155,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.patch("/incidents/:id/resolve", authenticateUser, async (req, res) => {
+	router.patch("/incidents/:id/resolve", async (req, res) => {
 		try {
 			const incidentId = Number(req.params.id);
 
@@ -183,7 +182,7 @@ export const createCoreRouter = (pool: Pool) => {
 		}
 	});
 
-	router.get("/reports", authenticateUser, async (req, res) => {
+	router.get("/reports", async (req, res) => {
 		try {
 			const { from, to } = req.query;
 

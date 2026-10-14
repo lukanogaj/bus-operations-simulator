@@ -99,12 +99,7 @@ const ReportsPage = () => {
 	const [error, setError] = useState("");
 
 	const loadReport = async (fromDate: string, toDate: string) => {
-		const token = localStorage.getItem("token");
 
-		if (!token) {
-			setError("Authentication token is missing.");
-			return;
-		}
 
 		setLoading(true);
 		setError("");
@@ -114,7 +109,6 @@ const ReportsPage = () => {
 				`/reports?from=${encodeURIComponent(fromDate)}&to=${encodeURIComponent(toDate)}`,
 				{
 					headers: {
-						Authorization: `Bearer ${token}`,
 					},
 				},
 			);

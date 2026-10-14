@@ -47,7 +47,6 @@ const AdminPage = () => {
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
 
-	const token = localStorage.getItem("token");
 
 	const storedUser = localStorage.getItem("user");
 
@@ -61,7 +60,6 @@ const AdminPage = () => {
 
 			const response = await apiFetch("/admin/users", {
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 
@@ -82,7 +80,7 @@ const AdminPage = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, [token]);
+	}, []);
 
 	useEffect(() => {
 		loadUsers();
@@ -100,7 +98,6 @@ const AdminPage = () => {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					username,
@@ -143,7 +140,6 @@ const AdminPage = () => {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					role: newRole,
@@ -189,7 +185,6 @@ const AdminPage = () => {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					password: newPassword,
@@ -232,7 +227,6 @@ const AdminPage = () => {
 			const response = await apiFetch(`/admin/users/${user.id}`, {
 				method: "DELETE",
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 

@@ -23,7 +23,6 @@ interface SidebarProps {
 	onSelect: (item: string) => void;
 	selectedItem: string;
 	user: User;
-	onLogout: () => void;
 }
 
 const getDisplayName = (username: string) => {
@@ -33,7 +32,7 @@ const getDisplayName = (username: string) => {
 		.join(" ");
 };
 
-const Sidebar = ({ onSelect, selectedItem, user, onLogout }: SidebarProps) => {
+const Sidebar = ({ onSelect, selectedItem, user }: SidebarProps) => {
 	const displayName = getDisplayName(user.username);
 
 	const visibleNavigationItems = navigationItems.filter(
@@ -65,13 +64,6 @@ const Sidebar = ({ onSelect, selectedItem, user, onLogout }: SidebarProps) => {
 				<div className={styles.userRole}>
 					{user.role === "garage_supervisor" ? "Garage Supervisor" : "Manager"}
 				</div>
-
-				<button
-					type='button'
-					className={styles.logoutButton}
-					onClick={onLogout}>
-					Logout
-				</button>
 			</div>
 		</aside>
 	);

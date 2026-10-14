@@ -1,7 +1,6 @@
 import { Router } from "express";
 import type { Pool } from "pg";
 
-import { authenticateUser, requireRole } from "../middleware/auth";
 import {
 	createUser,
 	deleteUser,
@@ -15,8 +14,6 @@ export const createAdminRouter = (pool: Pool) => {
 
 	router.get(
 		"/admin/users",
-		authenticateUser,
-		requireRole("manager"),
 		async (req, res) => {
 			try {
 				const users = await getUsers(pool);
@@ -34,8 +31,6 @@ export const createAdminRouter = (pool: Pool) => {
 
 	router.post(
 		"/admin/users",
-		authenticateUser,
-		requireRole("manager"),
 		async (req, res) => {
 			try {
 				const { username, password, role } = req.body;
@@ -76,8 +71,6 @@ export const createAdminRouter = (pool: Pool) => {
 
 	router.patch(
 		"/admin/users/:id/role",
-		authenticateUser,
-		requireRole("manager"),
 		async (req, res) => {
 			try {
 				const userId = Number(req.params.id);
@@ -115,8 +108,6 @@ export const createAdminRouter = (pool: Pool) => {
 
 	router.patch(
 		"/admin/users/:id/password",
-		authenticateUser,
-		requireRole("manager"),
 		async (req, res) => {
 			try {
 				const userId = Number(req.params.id);
@@ -158,8 +149,6 @@ export const createAdminRouter = (pool: Pool) => {
 
 	router.delete(
 		"/admin/users/:id",
-		authenticateUser,
-		requireRole("manager"),
 		async (req, res) => {
 			try {
 				const userId = Number(req.params.id);

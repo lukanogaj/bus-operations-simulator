@@ -7,7 +7,6 @@ import DashboardPage from "./pages/DashboardPage/DashboardPage";
 import DriverPage from "./pages/DriversPage/DriversPage";
 import DutiesPage from "./pages/DutiesPage/DutiesPage";
 import IncidentsPage from "./pages/IncidentsPage/IncidentsPage";
-import LoginPage from "./pages/LoginPage/LoginPage";
 import OperationsPage from "./pages/OperationsPage/OperationsPage";
 import PlannedAbsencesPage from "./pages/PlannedAbsencesPage/PlannedAbsencesPage";
 import ReportsPage from "./pages/ReportsPage/ReportsPage";
@@ -22,38 +21,17 @@ type User = {
 const App = () => {
 	const [selectedPage, setSelectedPage] = useState("Dashboard");
 
-	const [user, setUser] = useState<User | null>(() => {
-		const storedUser = localStorage.getItem("user");
-
-		return storedUser ? JSON.parse(storedUser) : null;
-	});
-
-	const handleLogin = (loggedInUser: User, token: string) => {
-		localStorage.setItem("token", token);
-		localStorage.setItem("user", JSON.stringify(loggedInUser));
-
-		setUser(loggedInUser);
-		setSelectedPage("Dashboard");
+	const user: User = {
+		id: 1,
+		username: "portfolio",
+		role: "manager",
 	};
-
-	const handleLogout = () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-
-		setUser(null);
-		setSelectedPage("Dashboard");
-	};
-
-	if (!user) {
-		return <LoginPage onLogin={handleLogin} />;
-	}
 
 	return (
 		<AppLayout
 			onSelectNavigation={setSelectedPage}
 			selectedPage={selectedPage}
-			user={user}
-			onLogout={handleLogout}>
+			user={user}>
 			{selectedPage === "Dashboard" ? (
 				<DashboardPage />
 			) : selectedPage === "Allocation" ? (

@@ -12,11 +12,9 @@ const DriverPage = () => {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		const token = localStorage.getItem("token");
 
 		apiFetch("/drivers", {
 			headers: {
-				Authorization: `Bearer ${token}`,
 			},
 		})
 			.then((response) => {

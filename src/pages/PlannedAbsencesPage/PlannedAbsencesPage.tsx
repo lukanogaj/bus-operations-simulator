@@ -39,17 +39,14 @@ const PlannedAbsencesPage = () => {
 		try {
 			setLoading(true);
 
-			const token = localStorage.getItem("token");
 
 			const [driversResponse, absencesResponse] = await Promise.all([
 				apiFetch("/drivers", {
 					headers: {
-						Authorization: `Bearer ${token}`,
 					},
 				}),
 				apiFetch("/planned-absences", {
 					headers: {
-						Authorization: `Bearer ${token}`,
 					},
 				}),
 			]);
@@ -83,13 +80,11 @@ const PlannedAbsencesPage = () => {
 			setSaving(true);
 			setError("");
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch("/planned-absences", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					driverNumber: Number(driverNumber),
@@ -141,12 +136,10 @@ const PlannedAbsencesPage = () => {
 		try {
 			setError("");
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch(`/planned-absences/${absenceId}`, {
 				method: "DELETE",
 				headers: {
-					Authorization: `Bearer ${token}`,
 				},
 			});
 

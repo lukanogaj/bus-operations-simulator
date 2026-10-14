@@ -64,13 +64,11 @@ const OperationsPage = () => {
 		try {
 			setLoading(true);
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch(
 				`/operations/issues?date=${selectedDate}`,
 				{
 					headers: {
-						Authorization: `Bearer ${token}`,
 					},
 				},
 			);
@@ -101,13 +99,11 @@ const OperationsPage = () => {
 			setAiLoadingIssue(issue.employeeNumber);
 			setError("");
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch("/operations/ai-recommendation", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					employeeNumber: issue.employeeNumber,
@@ -147,13 +143,11 @@ const OperationsPage = () => {
 			setAssigningDriver(candidate.employeeNumber);
 			setError("");
 
-			const token = localStorage.getItem("token");
 
 			const response = await apiFetch("/operations/assignments", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					absentDriverNumber: issue.employeeNumber,

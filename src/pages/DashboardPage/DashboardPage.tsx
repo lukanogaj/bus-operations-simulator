@@ -53,11 +53,9 @@ const DashboardPage = () => {
 			setLoading(true);
 			setError("");
 
-			const token = localStorage.getItem("token");
 			const operationalDate = getLondonDate();
 
 			const headers = {
-				Authorization: `Bearer ${token}`,
 			};
 
 			const [
