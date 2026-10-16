@@ -10,12 +10,25 @@ const DriverPage = () => {
 	const [drivers, setDrivers] = useState<Driver[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [searchTerm, setSearchTerm] = useState("");
+
+	const handleSearchTerm = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const searchItem = e.target.value.toLowerCase();
+		setSearchTerm(searchItem);
+	};
+
+	const filterDrivers = (drivers: Driver[]) => {
+		return drivers.filter((driver) => {
+			const fullName = `${driver.firstName} ${driver.lastName}`;
+			return fullName.toLowerCase().includes(searchTerm);
+		});
+	};
+
+	const matchingDrivers = filterDrivers(drivers);
 
 	useEffect(() => {
-
 		apiFetch("/drivers", {
-			headers: {
-			},
+			headers: {},
 		})
 			.then((response) => {
 				if (!response.ok) {
@@ -40,9 +53,16 @@ const DriverPage = () => {
 	return (
 		<section className={styles.container}>
 			<h1>Drivers</h1>
+			<div className={styles.searchTerm}>
+				<input
+					type='text'
+					placeholder='Type to search'
+					onChange={handleSearchTerm}
+				/>
+			</div>
 
 			<ul className={styles.driverList}>
-				{drivers.map((item) => (
+				{matchingDrivers.map((item) => (
 					<DriverCard
 						key={item.employeeNumber}
 						lastName={item.lastName}
