@@ -1,9 +1,23 @@
 .contentViewport {
 	flex: 1;
-
+	min-width: 0;
 	padding: var(--spacing-lg);
-
 	background: var(--color-bg);
-
 	color: var(--color-text);
+	overflow-x: auto;
+}
+
+@media screen and (max-width: 768px) {
+	.contentViewport {
+		padding: var(--spacing-md);
+	}
+}
+@media screen and (max-width: 768px) {
+	.topBar {
+		height: auto;
+		min-height: var(--header-height);
+		padding: var(--spacing-md);
+		flex-wrap: wrap;
+		gap: var(--spacing-sm);
+	}
 }

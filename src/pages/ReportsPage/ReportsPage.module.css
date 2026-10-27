@@ -231,3 +231,26 @@
 		box-sizing: border-box;
 	}
 }
+@media (max-width: 768px) {
+	.header {
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.filters {
+		padding: var(--spacing-md);
+	}
+
+	.generateButton {
+		width: 100%;
+	}
+
+	.sectionHeader {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.tableWrapper table {
+		min-width: 700px;
+	}
+}

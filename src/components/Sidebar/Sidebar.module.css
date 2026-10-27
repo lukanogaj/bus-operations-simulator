@@ -73,3 +73,27 @@
 	background: #475569;
 	border-color: #94a3b8;
 }
+@media screen and (max-width: 768px) {
+	.sidebarShell {
+		width: 100%;
+		padding: var(--spacing-md);
+		border-right: none;
+		border-bottom: 1px solid var(--border-color);
+	}
+
+	.navigationList {
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.navigationItem {
+		padding: 8px 10px;
+		font-size: 0.85rem;
+	}
+
+	.userSection {
+		padding: 12px 0 0;
+		margin-top: var(--spacing-sm);
+	}
+}

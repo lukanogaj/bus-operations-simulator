@@ -149,3 +149,25 @@
 		grid-column: span 2;
 	}
 }
+@media (max-width: 768px) {
+	.container {
+		padding: 0;
+	}
+
+	.form {
+		grid-template-columns: 1fr;
+		padding: var(--spacing-md);
+	}
+
+	.notesField {
+		grid-column: auto;
+	}
+
+	.addButton {
+		width: 100%;
+	}
+
+	.table {
+		min-width: 700px;
+	}
+}
