@@ -206,8 +206,11 @@
 	font-size: 14px;
 	font-weight: 600;
 }
+@media (max-width: 768px) {
+	.container {
+		padding: 0;
+	}
 
-@media (max-width: 760px) {
 	.header {
 		flex-direction: column;
 	}
@@ -221,5 +224,22 @@
 	.dateControl input {
 		width: 100%;
 		box-sizing: border-box;
+	}
+
+	.grid {
+		grid-template-columns: 1fr;
+	}
+
+	.details {
+		grid-template-columns: 1fr;
+	}
+
+	.candidate {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.assignButton {
+		width: 100%;
 	}
 }

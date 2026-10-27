@@ -35,3 +35,8 @@
 	font-size: 0.95rem;
 	line-height: 1.5;
 }
+@media screen and (max-width: 768px) {
+	.driverCard {
+		padding: var(--spacing-md);
+	}
+}

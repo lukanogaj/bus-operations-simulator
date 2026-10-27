@@ -93,3 +93,16 @@
 	color: #b91c1c;
 	font-size: 14px;
 }
+@media (max-width: 480px) {
+	.page {
+		padding: 16px;
+	}
+
+	.loginCard {
+		padding: 24px;
+	}
+
+	.heading h1 {
+		font-size: 26px;
+	}
+}

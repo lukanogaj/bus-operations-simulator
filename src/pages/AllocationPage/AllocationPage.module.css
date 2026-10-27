@@ -44,3 +44,18 @@
 .viewPdfButton:hover {
 	opacity: 0.9;
 }
+@media screen and (max-width: 768px) {
+	.container {
+		padding: 0;
+	}
+
+	.rotaCard {
+		width: 100%;
+		max-width: none;
+		padding: var(--spacing-md);
+	}
+
+	.viewPdfButton {
+		width: 100%;
+	}
+}

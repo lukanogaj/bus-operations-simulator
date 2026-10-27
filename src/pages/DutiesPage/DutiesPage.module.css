@@ -27,3 +27,16 @@
 .dutyCard p {
 	margin: 0.4rem 0;
 }
+@media screen and (max-width: 768px) {
+	.container {
+		padding: 0;
+	}
+
+	.dutyCard {
+		padding: var(--spacing-md);
+	}
+
+	.dutyNumber {
+		font-size: 1.15rem;
+	}
+}

@@ -161,3 +161,21 @@
 		grid-template-columns: 1fr;
 	}
 }
+@media (max-width: 768px) {
+	.form {
+		padding: var(--spacing-md);
+	}
+
+	.cardHeader {
+		flex-direction: column;
+	}
+
+	.incidentCard {
+		padding: var(--spacing-md);
+	}
+
+	.form button,
+	.incidentCard button {
+		width: 100%;
+	}
+}
