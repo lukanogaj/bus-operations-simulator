@@ -9,7 +9,6 @@ type DriverRotaProps = {
 const DriverRota = ({ rota }: DriverRotaProps) => {
 	return (
 		<div className={styles.driverRota}>
-			{" "}
 			<strong>Rota: </strong>
 			{driverRotaLabels[rota]}
 		</div>
