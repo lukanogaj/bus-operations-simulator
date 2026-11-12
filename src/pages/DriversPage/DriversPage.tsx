@@ -17,7 +17,7 @@ const DriverPage = () => {
 	);
 
 	const handleSearchTerm = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const searchItem = e.target.value.toLowerCase();
+		const searchItem = e.target.value.toLowerCase().trim();
 		setSearchTerm(searchItem);
 	};
 
