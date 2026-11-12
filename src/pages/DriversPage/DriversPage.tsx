@@ -24,10 +24,12 @@ const DriverPage = () => {
 	const filterDrivers = (drivers: Driver[]) => {
 		return drivers.filter((driver) => {
 			const fullName = `${driver.firstName} ${driver.lastName}`;
+			const driverEmployeeNumber = `${driver.employeeNumber}`;
 			const matchSearch = fullName.toLowerCase().includes(searchTerm);
+			const matchNumber = driverEmployeeNumber.includes(searchTerm);
 			const matchStatus =
 				selectedStatus === "" || driver.status === selectedStatus;
-			return matchSearch && matchStatus;
+			return (matchSearch && matchStatus) || (matchNumber && matchStatus);
 		});
 	};
 
